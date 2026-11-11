@@ -1,5 +1,5 @@
 (() => {
-const WA = '22965435681', KEY = 'zakat-app-v3', ACCESS = 'zakat-access', USER = 'zakat-user', SYNC = 'zakat-sync';
+const WA = '22965435681', KEY = 'zakat-app-v3', ACCESS = 'zakat-access', USER = 'zakat-user', SYNC = 'zakat-sync', UNSUB = 'zakat-unsub';
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycby5rbrRkfoFAA7ahhQj7yeZIHAv3OR-Q3oO9MVOzNFHjkxjLS4k26YazVK7kpXTEuMl/exec';
 const OZ = 31.1034768;
 // Valeurs de secours, utilisées tant que les cours en direct n'ont pas été lus.
@@ -80,12 +80,31 @@ async function refresh(force) {
 }
 
 /* ---------- Formulaire d'accès ---------- */
+// Indicatifs reconnus et nombre de chiffres du numéro national (min, max). Sans règle précise : 7 à 12 chiffres.
+const CC_LEN = { 1: [10, 10], 7: [10, 10], 20: [10, 10], 27: [9, 9], 30: [10, 10], 31: [9, 9], 32: [8, 9], 33: [9, 9], 34: [9, 9], 39: [9, 11], 41: [9, 9], 44: [10, 10], 47: [8, 8], 49: [10, 11], 55: [10, 11], 61: [9, 9], 90: [10, 10],
+  212: [9, 9], 213: [9, 9], 216: [8, 8], 221: [9, 9], 222: [8, 8], 223: [8, 8], 224: [9, 9], 225: [10, 10], 226: [8, 8], 227: [8, 8], 228: [8, 8], 229: [8, 10], 233: [9, 9], 234: [10, 10], 235: [8, 8], 237: [9, 9], 241: [7, 8], 242: [9, 9], 243: [9, 9],
+  253: [8, 8], 261: [9, 9], 262: [9, 9], 269: [7, 7], 351: [9, 9], 352: [8, 9], 965: [8, 8], 966: [9, 9], 971: [9, 9], 974: [8, 8] };
+const CC_ALL = new Set(('1 7 20 27 30 31 32 33 34 36 39 40 41 43 44 45 46 47 48 49 51 52 53 54 55 56 57 58 60 61 62 63 64 65 66 81 82 84 86 90 91 92 93 94 95 98 ' +
+  '211 212 213 216 218 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 248 249 250 251 252 253 254 255 256 257 258 260 261 262 263 264 265 266 267 268 269 ' +
+  '291 297 298 299 350 351 352 353 354 355 356 357 358 359 370 371 372 373 374 375 376 377 378 380 381 382 383 385 386 387 389 420 421 423 501 502 503 504 505 506 507 508 509 590 591 592 593 594 595 596 597 598 599 ' +
+  '670 673 674 675 676 677 678 679 680 685 687 689 852 853 855 856 880 886 960 961 962 963 964 965 966 967 968 970 971 972 973 974 975 976 977 992 993 994 995 996 998').split(' '));
+const CC_KEEP0 = new Set(['229', '225', '39', '242']); // pays où le 0 initial fait partie du numéro
+// Accepte un numéro avec ou sans « + » ou « 00 », à condition qu'il commence par un indicatif de pays et ait le bon nombre de chiffres.
 function phone(v) {
-  let s = v.replace(/[\s().\-]/g, '');
-  if (s.startsWith('00')) s = '+' + s.slice(2);
-  if (!/^\+[1-9]\d{7,14}$/.test(s)) return null;
-  if (s.startsWith('+33')) { const n = s.slice(3).replace(/^0/, ''); if (!/^[67]\d{8}$/.test(n)) return null; s = '+33' + n }
-  return s;
+  let d = String(v || '').trim().replace(/^\+/, '').replace(/[\s().\- ]/g, '');
+  if (!/^\d+$/.test(d)) return null;
+  if (d.startsWith('00')) d = d.slice(2);
+  if (d.startsWith('0')) return null;
+  for (const len of [3, 2, 1]) {
+    const cc = d.slice(0, len); if (!CC_ALL.has(cc)) continue;
+    let n = d.slice(len);
+    if (!CC_KEEP0.has(cc)) n = n.replace(/^0/, '');
+    const r = CC_LEN[cc] || [7, 12];
+    if (n.length < r[0] || n.length > r[1]) return null;
+    if (cc === '33' && !/^[67]/.test(n)) return null;
+    return '+' + cc + n;
+  }
+  return null;
 }
 function renderGate() {
   $('#gate').innerHTML = `<div class="wrap">
@@ -102,7 +121,7 @@ function renderGate() {
     <form class="card" id="lead" novalidate>
       <h2>${t('g_title')}</h2>
       <div class="field" id="f-fn"><label for="fn">${t('f_fn')}</label><div class="inp"><input id="fn" autocomplete="given-name" dir="ltr"></div></div>
-      <div class="field" id="f-wa"><label for="wa">${t('f_wa')}</label><div class="inp"><input id="wa" type="tel" inputmode="tel" autocomplete="tel" placeholder="+33 6 12 34 56 78" dir="ltr"></div><small>${t('f_wa_h')}</small></div>
+      <div class="field" id="f-wa"><label for="wa">${t('f_wa')}</label><div class="inp"><input id="wa" type="tel" inputmode="tel" autocomplete="tel" placeholder="33 6 12 34 56 78" dir="ltr"></div><small>${t('f_wa_h')}</small></div>
       <p class="err" id="lead-err" role="alert" hidden></p>
       <input id="site" name="site" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
       <button class="cta" id="go" type="submit">${t('g_go')}</button>
@@ -114,6 +133,12 @@ function sendLead() {
   if (!u || !u.fn || !u.wa || read(SYNC) === '1') return;
   fetch(SHEET_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ prenom: u.fn, numero: u.wa, site: u.site || '' }), keepalive: true })
     .then(r => r.json()).then(j => { if (j && (j.ok || j.erreur === 'prenom' || j.erreur === 'numero')) store(SYNC, '1') }).catch(() => {});
+}
+// Signale la désinscription à la feuille. En cas d'échec, nouvel essai à la prochaine ouverture ; le numéro en attente est ensuite effacé.
+function sendUnsub() {
+  const n = read(UNSUB); if (!n) return;
+  fetch(SHEET_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'desinscription', numero: n }), keepalive: true })
+    .then(r => r.json()).then(j => { if (j && j.ok && j.desinscrit) drop(UNSUB) }).catch(() => {});
 }
 function openApp() { $('#gate').hidden = true; $('#app').hidden = false; render(); refresh() }
 $('#gate').addEventListener('click', e => {
@@ -128,6 +153,7 @@ $('#gate').addEventListener('submit', e => {
   const msg = bad.fn ? t('e_fn') : bad.wa ? t('e_wa') : '';
   $('#lead-err').hidden = !msg; $('#lead-err').textContent = msg;
   if (msg) return;
+  if (read(UNSUB) === l.wa) drop(UNSUB);
   store(USER, JSON.stringify({ fn: l.fn, wa: l.wa, site: $('#site').value })); store(ACCESS, l.fn);
   if (S.profiles.length === 1 && S.profiles[0].name === 'Moi') S.profiles[0].name = l.fn;
   if (!S.curSet) S.cur = curFromPhone(l.wa);
@@ -419,13 +445,14 @@ document.addEventListener('click', e => {
   else if (act === 'reset') { if (b.dataset.armed) { P().d = blank(); toast(t('to_reset')) } else { b.dataset.armed = 1; b.textContent = t('reset_go'); return } }
   else if (act === 'unsub') {
     if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = t('unsub_go'); return }
-    drop(USER); drop(ACCESS); drop(SYNC); $('#app').hidden = true; $('#gate').hidden = false; route = 'home'; renderGate(); window.scrollTo(0, 0); return;
+    const u = user(); if (u && u.wa) store(UNSUB, u.wa);
+    drop(USER); drop(ACCESS); drop(SYNC); sendUnsub(); $('#app').hidden = true; $('#gate').hidden = false; route = 'home'; renderGate(); window.scrollTo(0, 0); return;
   }
   save(); render();
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('#app').hidden) refresh() });
 setInterval(() => { if (!$('#app').hidden) refresh() }, 15 * 60e3);
 
-applyLang(); renderGate();
+applyLang(); renderGate(); sendUnsub();
 if (read(ACCESS)) { openApp(); sendLead() }
 })();
