@@ -1051,16 +1051,16 @@ function findGlobal(ix, hw, near) {
 function makeMatcher(expected, verseStarts) {
   const st = expected.map(() => 'notreached'), heard = expected.map(() => null), E = expected.map(variants);
   let pos = 0, ignored = 0, lost = 0, carry = [], liveEnd = -1;
-  const words = t => t.split(/\s+/).filter(w => baseNorm(w).length);
+  const words = t => (' ' + t).replace(/\s(يَا|يا)\s+(?=\S)/g, ' يا').split(/\s+/).filter(w => baseNorm(w).length);
   function tryAt(p, hw, text, extra) {
     const r = align(expected.slice(p, p + hw.length + extra), text); let last = -1, ok = 0;
     r.words.forEach((w, k) => { if (w.status !== 'notreached') last = k; if (w.status === 'ok') ok++; });
     return { words: r.words, last, ok, tail: r.heardWords.slice(r.lastHeard + 1) };
   }
   function anchor(hw) { // l'élève a sauté plus loin : on cherche un début de verset qui correspond nettement
-    const n = Math.min(5, hw.length), H = hw.slice(0, n).map(variants), need = n >= 5 ? 4 : n;
+    const n = Math.min(5, hw.length), H = hw.slice(0, n).map(variants), need = n >= 5 ? 4 : n; if (n < 4) return -1;
     for (const o of verseStarts) {
-      if (o <= pos) continue; if (o > pos + 500) break;
+      if (o <= pos) continue; if (o > pos + 80) break;
       let c = 0; for (let j = 0; j < n && o + j < E.length; j++) if (sim(E[o + j], H[j]) >= OK) c++;
       if (c >= need) return o;
     }
@@ -1071,13 +1071,13 @@ function makeMatcher(expected, verseStarts) {
     const fresh = words(text); if ((!fresh.length && !final) || pos >= expected.length) return;
     const hw = carry.concat(fresh); if (!hw.length) return; text = hw.join(' '); // un mot coupé par une respiration se recolle avec la phrase suivante
     let r = tryAt(pos, hw, text, 30);
+    if (!enough(r.ok, hw.length) && hw.length >= 3 && pos > 0) { // l'élève reprend un passage déjà récité : on revient avec lui
+      const b = locate(E, hw.map(variants), pos - 150, pos - 1, pos);
+      if (b && b.m >= Math.max(3, Math.ceil(b.n * 0.7))) { const r2 = tryAt(b.o, hw, text, 30); if (enough(r2.ok, hw.length) && r2.ok > r.ok) { pos = b.o; r = r2; } }
+    }
     if (!enough(r.ok, hw.length) && hw.length >= 3) {
       const o = anchor(hw);
-      if (o > pos) { const r2 = tryAt(o, hw, text, 30); if (enough(r2.ok, hw.length)) { for (let k = pos; k < o; k++) st[k] = 'missed'; pos = o; r = r2; } }
-    }
-    if (!enough(r.ok, hw.length) && hw.length >= 3 && pos > 0) { // l'élève reprend un passage déjà récité : on revient avec lui
-      const b = locate(E, hw.map(variants), pos - 120, pos - 1, pos);
-      if (b && b.m >= Math.max(3, Math.ceil(b.n * 0.7))) { const r2 = tryAt(b.o, hw, text, 30); if (enough(r2.ok, hw.length) && r2.ok > r.ok) { pos = b.o; r = r2; } }
+      if (o > pos) { const r2 = tryAt(o, hw, text, 30); if (enough(r2.ok, hw.length)) { for (let k = pos; k < o; k++) if (st[k] !== 'ok') st[k] = (k <= liveEnd ? 'ok' : 'missed'); pos = o; r = r2; } }
     }
     if (!enough(r.ok, hw.length) || r.last < 0) { ignored++; lost++; carry = fresh.slice(-2); return; }
     lost = 0; carry = r.tail.slice(-2);
@@ -1103,11 +1103,11 @@ function makeMatcher(expected, verseStarts) {
     const hw = words(text); if (!hw.length) return null; const near = liveEnd >= 0 ? liveEnd + 1 : pos; // on part du curseur, même s'il est revenu en arrière
     if (hw.length === 1) { // un seul mot : accepté seulement s'il suit de près le curseur
       const r = locate(E, hw.map(variants), near, near + 5, near); if (!r) return null; liveEnd = r.last; return { from: r.o, to: r.last }; }
-    const r = locate(E, hw.map(variants), pos - 120, pos + 60, near);
-    if (!r || r.m < Math.max(2, Math.ceil(r.n * 0.6))) return null;
+    const H = hw.map(variants); let r = locate(E, H, near - 2, near + 22, near);
+    if (!r || r.m < Math.max(2, Math.ceil(r.n * 0.6))) { r = locate(E, H, pos - 150, pos + 60, near); if (!r || r.m < Math.max(3, Math.ceil(r.n * 0.8))) return null; }
     liveEnd = r.last; return { from: r.o, to: r.last };
   }
-  return { st, heard, commit, preview, live, finish: () => commit('', true), pos: () => pos, ignored: () => ignored, lost: () => lost, liveEnd: () => liveEnd };
+  return { st, heard, commit, preview, live, seek: o => { pos = Math.max(0, Math.min(o, expected.length - 1)); liveEnd = pos - 1; lost = 0; carry = []; }, finish: () => commit('', true), pos: () => pos, ignored: () => ignored, lost: () => lost, liveEnd: () => liveEnd };
 }
 if (typeof module !== 'undefined') module.exports = { align, variants, baseNorm, sim, splitOnSilence, vowelDiff, makeMatcher, locate, makeIndex, findGlobal };
 
@@ -1167,10 +1167,10 @@ const GK = new Map();
 function globalIndex() { if (!GIX) { const flat = []; GREF = []; WORDS.forEach((v, s) => v.forEach((ws, a) => ws.forEach((w, wi) => { GK.set(s + ':' + a + ':' + wi, flat.length); flat.push(w); GREF.push([s, a, wi]); }))); GIX = makeIndex(flat); } return GIX; }
 setTimeout(() => { try { globalIndex(); } catch (e) {} }, 2500);
 // Récitation entendue ailleurs que sur la page : on cherche dans tout le Coran et on y va
-function globalFind(text, strict) {
+function globalFind(text, strict) { text = (' ' + text).replace(/\s(يَا|يا|يٰ)\s+(?=\S)/g, ' يا').trim();
   let hw = text.split(/\s+/).filter(w => baseNorm(w).length); const B = BASMALA.map(variants);
   let k = 0; while (k < Math.min(4, hw.length) && sim(B[k], variants(hw[k])) >= 0.75) k++; if (k >= 3) hw = hw.slice(k);
-  if (hw.length < (strict ? 4 : 3)) return null; const ix = globalIndex(); let near = 0; try { for (let q = Math.min(matcher.pos(), wordRef.length - 1); q < wordRef.length; q++) { const g0 = GK.get(wordRef[q].join(':')); if (g0 != null) { near = g0; break; } } } catch (e) {} const r = findGlobal(ix, hw, near); if (!r || (strict && r.m < hw.length)) return null; return GREF[r.o];
+  if (hw.length < (strict ? 4 : 3)) return null; const ix = globalIndex(); let near = 0; try { for (let q = Math.min(matcher.pos(), wordRef.length - 1); q < wordRef.length; q++) { const g0 = GK.get(wordRef[q].join(':')); if (g0 != null) { near = g0; break; } } } catch (e) {} const r = findGlobal(ix, hw, near); if (!r || (strict === 2 && r.m < Math.max(3, hw.length - 1)) || (strict === true && r.m < hw.length - (hw.length >= 6 ? 1 : 0))) return null; return GREF[r.o];
 }
 function getStart() { if (unit === 'sura') { const s = +sura.value, n = QURAN[s].v.length, f = Math.min(Math.max(1, +from.value || 1), n); from.value = f; from.max = n; return [s, f - 1]; } return AY[UNITS[unit].range(+num.value)[0]]; }
 function buildSession(s0, a0, w0) { try { if (matcher && wordRef) matcher.st.forEach((s, i) => { if (s === 'ok' && wordRef[i]) said.add(wordRef[i].join(':')); }); } catch (e) {}
@@ -1464,13 +1464,13 @@ function commitText(x) {
   if (!matcher.lost()) { lostTexts = []; liveCur = matcher.liveEnd(); return; }
   lostTexts.push(x); lostTexts = lostTexts.slice(-3);
   if (matcher.st.some(s => s === 'ok') && matcher.lost() < 2 && !globalFind(x, true)) return; // un passage manqué en cours de route : on attend la phrase suivante
-  const g = globalFind(x, true) || globalFind(lostTexts.slice(-2).join(' ')) || globalFind(x); if (!g) return; { const gi = idxOf.get(key(g[0], g[1], g[2])); if (gi != null && gi >= matcher.pos() - 5 && gi <= matcher.pos() + 60 && matcher.lost() < 2) return; }
+  const g = globalFind(x, true) || globalFind(lostTexts.slice(-2).join(' ')) || globalFind(x); if (!g) return; { const gi = idxOf.get(key(g[0], g[1], g[2])); if (gi != null && gi >= matcher.pos() - 5 && gi <= matcher.pos() + 60 && matcher.lost() < 2) return; if (gi != null) { const again = lostTexts.slice(); lostTexts = []; matcher.seek(snapV(gi)); again.slice(-2).forEach(y => matcher.commit(y)); liveCur = matcher.liveEnd(); return; } }
   const [s, a, wi] = g, again = lostTexts.slice(); lostTexts = [];
   buildSession(s, a, wi); sura.value = s; from.value = a + 1; unit = 'sura'; syncPicker(); store.set('mcf-sel', { mode, unit, s: String(s), f: String(a + 1), n: num.value });
   again.forEach(y => matcher.commit(y)); liveCur = matcher.liveEnd(); renderPage(pageOfIdx[Math.max(0, Math.min(matcher.pos(), expected.length - 1))]);
 }
 function submit(audio, mySession) { // phrase terminée : résultat définitif, dans l'ordre
-  const slot = { text: null }, spare = audio.length >= 16000 * 1.2 ? audio.slice() : null; queue.push(slot); pendingJobs++;
+  const slot = { text: null }, spare = null; queue.push(slot); pendingJobs++;
   const settle = t => {
     if (mySession !== session) return; slot.text = t || ''; pendingJobs--;
     const keep = liveCur, sess0 = matcher; while (queue.length && queue[0].text !== null) { const x = queue.shift().text; if (x) heardAll.push(x); commitText(x); }
@@ -1480,8 +1480,7 @@ function submit(audio, mySession) { // phrase terminée : résultat définitif, 
   transcribe(audio).then(m => {
     if (mySession !== session) return; const t = m.text || '';
     // phrase non reconnue à cet endroit : une seconde écoute, plus complète, avant de conclure
-    if (spare && queue[0] === slot && t && matcher.preview(t).length === 0) transcribe(spare, true).then(m2 => settle(m2.text && matcher.preview(m2.text).length ? m2.text : t));
-    else settle(t);
+    settle(t);
   });
 }
 let lastBad = 0;
@@ -1518,9 +1517,9 @@ function chips() {
 }
 
 function showResults(celebrate) {
-  const c = tally(), total = Math.max(1, reached() - c.sk), pct = Math.round(100 * c.ok / total); $('nNr').parentElement.style.display = mode === 'recite' ? 'none' : '';
+  const c = tally(); if (mode === 'recite') c.nr = 0; const total = mode === 'recite' ? Math.max(1, c.ok + c.doubt + c.bad) : Math.max(1, reached() - c.sk), pct = Math.round(100 * c.ok / total); $('nNr').parentElement.style.display = mode === 'recite' ? 'none' : '';
   $('nOk').textContent = c.ok; $('nDoubt').textContent = c.doubt; $('nBad').textContent = c.bad; $('nNr').textContent = c.nr; $('pct').textContent = pct;
-  const v = $('verdict'); v.className = 'verdict'; const allOk = c.ok === total && reached() >= 3, perfect = allOk && peeks === 0;
+  const v = $('verdict'); v.className = 'verdict'; const allOk = c.ok === total && c.ok >= 3, perfect = allOk && peeks === 0;
   $('peekRow').style.display = peeks ? 'flex' : 'none'; $('nPeek').textContent = peeks;
   let msg; const unheard = t('Je n\'ai pas reconnu ce passage dans votre récitation. Rapprochez le téléphone et récitez à nouveau.');
   if (c.ok + c.doubt + c.bad === 0 || (c.ok === 0 && c.bad === 0)) { v.classList.add('warn'); msg = unheard; }
@@ -1600,8 +1599,8 @@ function liveTick(final) {
     transcribe(region.slice(w0, b)).then(m => {
       partialBusy = false; if (m.ms) lagMs.push(m.ms);
       if (mySession !== session || cursor > startAbs || finished) return;
-      const ws = (m.text || '').split(/\s+/).filter(Boolean), nAll = ws.length; ws.pop(); if (cut) ws.shift(); // mots coupés aux deux bouts de la fenêtre
-      const r = matcher.live(ws.join(' ')); if (!r) { if (mode === 'recite' && ws.length >= 4 && (++liveMiss >= 1 || !matcher.st.some(s => s === 'ok'))) { const g = globalFind(ws.join(' '), true); if (g) { const gi = idxOf.get(key(g[0], g[1], g[2])); if (gi == null || gi < matcher.pos() - 5 || gi > matcher.pos() + 60) { liveMiss = 0; lostTexts = []; buildSession(g[0], g[1], g[2]); sura.value = g[0]; from.value = g[1] + 1; unit = 'sura'; syncPicker(); clearEst(); liveCur = -1; previewIdx = []; renderPage(pageOfIdx[0]); } } } return; } liveMiss = 0;
+      window.__lp = (m.text || '') + ' #' + Math.round(m.ms || 0); const ws = (m.text || '').split(/\s+/).filter(Boolean), nAll = ws.length; ws.pop(); if (cut) ws.shift(); // mots coupés aux deux bouts de la fenêtre
+      const r = matcher.live(ws.join(' ')); if (!r) { if (mode === 'recite' && nAll >= 4 && (++liveMiss >= 1 || !matcher.st.some(s => s === 'ok'))) { const g = globalFind((m.text || ''), matcher.st.some(s => s === 'ok') ? true : 2); if (g) { const gi = idxOf.get(key(g[0], g[1], g[2])); if (gi != null && (gi < matcher.pos() - 5 || gi > matcher.pos() + 60)) { liveMiss = 0; matcher.seek(snapV(gi)); clearEst(); liveCur = -1; previewIdx = []; update(); } else if (gi == null) { liveMiss = 0; lostTexts = []; buildSession(g[0], g[1], g[2]); sura.value = g[0]; from.value = g[1] + 1; unit = 'sura'; syncPicker(); clearEst(); liveCur = -1; previewIdx = []; renderPage(pageOfIdx[0]); } } } return; } liveMiss = 0;
       if (!(liveCur >= matcher.pos() && r.to < liveCur && liveCur - r.to <= 8)) liveCur = r.to; previewIdx = []; for (let k = matcher.pos(); k <= liveCur; k++) previewIdx.push(k); update();
       if (nAll >= 2) estRate = Math.min(3.4, Math.max(1.3, 0.6 * estRate + 0.4 * (nAll / Math.max(0.8, (b - w0) / 16000)))); estInfo = { to: r.to, endAbs: cursor + b }; moveEst();
     });
@@ -2066,6 +2065,8 @@ if (window.ResizeObserver) new ResizeObserver(() => { if (pageOk && $('pageBox')
 
 { const h = $('homeBtn'); document.querySelector('.recTop').prepend(h); h.classList.add('topHome'); }
 window.__lis = lis;
+
+function snapV(gi) { let v = -1; for (const s of verseStarts) { if (s <= gi) v = s; else break; } return v >= 0 && gi - v <= 2 ? v : gi; }
 
 </script>
 </body>
