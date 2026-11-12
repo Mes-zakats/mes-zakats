@@ -151,6 +151,14 @@
   body.v-recite:not(.eval) .dock, body.v-recite.rec:not(.eval) .dock { bottom:0; left:0; right:0; padding:9px 0 calc(9px + env(safe-area-inset-bottom, 0px)); background:#fff; border-top:1px solid #DCE9E2; box-shadow:0 -3px 14px rgba(6,61,43,.12); gap:0; pointer-events:auto; }
   body.v-recite:not(.eval) .dockRow { background:none; box-shadow:none; padding:0; backdrop-filter:none; -webkit-backdrop-filter:none; gap:16px; }
   body.v-recite:not(.eval) .say { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); }
+
+  /* avance en direct : même vert que les mots validés, sans bleu */
+  .w.est, .w.pending.est { color:#00934A !important; }
+  #pageBox.show .w.est, #pageBox.show .w.pending.est { color:#00934A !important; background:rgba(0,147,74,.13) !important; }
+  #eyeBtn .e1 { display:none; } #eyeBtn.vis .e1 { display:block; } #eyeBtn.vis .e2 { display:none; } #eyeBtn.vis { background:var(--em); color:#fff; }
+  body.rec #eyeBtn { visibility:visible !important; }
+  body.v-recite:not(.eval) .dockRow { gap:11px !important; }
+  .pg.topHome { width:34px; height:34px; flex:none; visibility:visible !important; } body.rec .pg.topHome { display:none; }
   .dockRow { display:flex; align-items:center; gap:26px; direction:ltr; }
   .pg { width:44px; height:44px; border-radius:50%; border:0; background:var(--mint); display:flex; align-items:center; justify-content:center; } .pg svg { width:22px; height:22px; }
   body.rec .pg, body.eval .pg { visibility:hidden; }
@@ -650,6 +658,7 @@
 <div class="dock">
   <div class="say" id="say"></div>
   <div class="dockRow">
+    <button class="pg" id="eyeBtn" aria-label="Afficher ou cacher le texte"><svg class="e1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="e2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 5.2A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6C3.6 8.6 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.5 4.5-1.2M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button>
     <button class="pg" id="homeBtn" aria-label="Accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg></button>
     <button class="pg" id="pgNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button class="mic load" id="mic">
@@ -1978,34 +1987,58 @@ function dareFinish() {
 $('myName').value = store.get('mcf-name', ''); $('myName').addEventListener('input', e => store.set('mcf-name', e.target.value.trim().slice(0, 20)));
 
 /* ---------- Écoute : un récitant lit la page, verset par verset, avec suivi à l'écran ---------- */
-const RECS = [['Husary_128kbps_Mujawwad', 'Mahmoud Khalil Al-Husary (Mujawwad)'], ['Husary_128kbps', 'Mahmoud Khalil Al-Husary (Murattal)'], ['Muhammad_Ayyoub_128kbps', 'Muhammad Ayyoub'], ['Alafasy_128kbps', 'Mishary Alafasy'], ['Ali_Jaber_64kbps', 'Ali Jaber'], ['Yasser_Ad-Dussary_128kbps', 'Yasser Ad-Dawsari'], ['Abdurrahmaan_As-Sudais_192kbps', 'Abdurrahman As-Sudais'], ['Abdul_Basit_Murattal_192kbps', 'Abdul Basit (Murattal)'], ['Abdul_Basit_Mujawwad_128kbps', 'Abdul Basit (Mujawwad)'], ['Minshawy_Murattal_128kbps', 'Mohamed Al-Minshawi'], ['Abu_Bakr_Ash-Shaatree_128kbps', 'Abu Bakr Ash-Shatri'], ['Hudhaify_128kbps', 'Ali Al-Hudhaify'], ['MaherAlMuaiqly128kbps', 'Maher Al-Muaiqly']];
+const RECS = [['Husary_128kbps_Mujawwad', 'Mahmoud Khalil Al-Husary (Mujawwad)'], ['Husary_128kbps', 'Mahmoud Khalil Al-Husary (Murattal)'], ['Muhammad_Ayyoub_128kbps', 'Muhammad Ayyoub'], ['Abdullah_Basfar_192kbps', 'Abdullah Basfar'], ['Alafasy_128kbps', 'Mishary Alafasy'], ['Ali_Jaber_64kbps', 'Ali Jaber'], ['Yasser_Ad-Dussary_128kbps', 'Yasser Ad-Dawsari'], ['Abdurrahmaan_As-Sudais_192kbps', 'Abdurrahman As-Sudais'], ['Abdul_Basit_Murattal_192kbps', 'Abdul Basit (Murattal)'], ['Abdul_Basit_Mujawwad_128kbps', 'Abdul Basit (Mujawwad)'], ['Minshawy_Murattal_128kbps', 'Mohamed Al-Minshawi'], ['Abu_Bakr_Ash-Shaatree_128kbps', 'Abu Bakr Ash-Shatri'], ['Hudhaify_128kbps', 'Ali Al-Hudhaify'], ['MaherAlMuaiqly128kbps', 'Maher Al-Muaiqly']];
 const lis = { on: false, rec: localStorage.getItem('mcf-rec') || RECS[0][0], rate: +localStorage.getItem('mcf-rate') || 1, au: new Audio(), last: null, tok: 0 };
 lis.au.preload = 'auto';
 const lisVerses = p => { const out = [], seen = new Set(); for (const l of PG[p] || []) { if (!l.items) continue; for (const it of l.items) { if (it.m) continue; const k = it.s + ':' + it.a; if (!seen.has(k)) { seen.add(k); out.push([it.s, it.a]); } } } return out; };
 const pad3 = n => String(n).padStart(3, '0');
 function lisMark(s, a) { $('pageBox').querySelectorAll('.lis').forEach(e => e.classList.remove('lis')); const els = $('pageBox').querySelectorAll('[data-v="' + s + ':' + a + '"]'); els.forEach(e => e.classList.add('lis')); if (els[0] && canScroll()) { const wr = $('pageWrap').getBoundingClientRect(), r = els[0].getBoundingClientRect(); if (r.top < wr.top + 20 || r.bottom > wr.bottom - 60) els[0].scrollIntoView({ block: 'center', behavior: 'smooth' }); } }
 function lisUI() { $('lisPlay').classList.toggle('on', lis.on); $('lisBtn').classList.toggle('on', lis.on); document.querySelectorAll('#lisRates button').forEach(b => b.classList.toggle('on', +b.dataset.r === lis.rate)); $('lisRec').value = lis.rec; }
-function lisStop() { if (!lis.on && !lis.au.src) return; lis.on = false; lis.tok++; lis.au.pause(); $('pageBox').querySelectorAll('.lis').forEach(e => e.classList.remove('lis')); try { veil(); } catch (e) {} lisUI(); }
-const lisUrl = (s, a) => 'https://everyayah.com/data/' + lis.rec + '/' + pad3(s + 1) + pad3(a + 1) + '.mp3'; lis.cache = new Map();
-async function lisBlob(u) { if (lis.cache.has(u)) return lis.cache.get(u); const r = await fetch(u); if (!r.ok) throw new Error('http'); const o = URL.createObjectURL(await r.blob()); lis.cache.set(u, o); if (lis.cache.size > 6) { const k = lis.cache.keys().next().value; URL.revokeObjectURL(lis.cache.get(k)); lis.cache.delete(k); } return o; }
+lis.A = [lis.au, new Audio()]; lis.A[1].preload = 'auto'; lis.cur = 0; lis.cache = new Map(); lis.paused = false;
+function lisStop() { if (!lis.on && !lis.au.src) return; lis.on = false; lis.paused = false; lis.tok++; lis.A.forEach(x => { try { x.pause(); } catch (e) {} }); $('pageBox').querySelectorAll('.lis').forEach(e => e.classList.remove('lis')); try { veil(); } catch (e) {} lisUI(); try { navigator.mediaSession.playbackState = 'none'; } catch (e) {} }
+const lisUrl = (s, a) => 'https://everyayah.com/data/' + lis.rec + '/' + pad3(s + 1) + pad3(a + 1) + '.mp3';
+const lisWait = ms => new Promise(r => setTimeout(r, ms));
+function lisBlob(u) { // fichier du verset, gardé en mémoire ; plusieurs tentatives si le réseau flanche
+  if (lis.cache.has(u)) return lis.cache.get(u);
+  const p = (async () => { let err; for (let k = 0; k < 4; k++) { try { const r = await fetch(u); if (!r.ok) throw new Error('http ' + r.status); return URL.createObjectURL(await r.blob()); } catch (e) { err = e; await lisWait(500 + 700 * k); } } lis.cache.delete(u); throw err; })();
+  lis.cache.set(u, p); if (lis.cache.size > 24) { const k = lis.cache.keys().next().value, v = lis.cache.get(k); lis.cache.delete(k); v.then(o => setTimeout(() => URL.revokeObjectURL(o), 60000)).catch(() => {}); }
+  return p;
+}
+const lisAfter = (s, a) => a + 1 < QURAN[s].v.length ? [s, a + 1] : s + 1 < QURAN.length ? [s + 1, 0] : null;
+async function lisPrep(el, s, a, tok) { try { const u = lisUrl(s, a), src = await lisBlob(u); if (tok !== lis.tok || el === lis.au) return; if (el.dataset.u !== u) { el.dataset.u = u; el.src = src; el.load(); } } catch (e) {} }
+function lisMeta(s, a) { try { if (!('mediaSession' in navigator)) return; navigator.mediaSession.metadata = new MediaMetadata({ title: suraName(s) + ' : ' + (a + 1), artist: (RECS.find(r => r[0] === lis.rec) || [0, ''])[1], album: 'Hifz Facile' }); navigator.mediaSession.playbackState = 'playing'; } catch (e) {} }
 async function lisVerse(s, a, tok) {
-  if (tok !== lis.tok) return; lis.last = [s, a]; $('pageBox').classList.add('show'); lisMark(s, a); $('lisMsg').textContent = ''; const fail = () => { if (tok === lis.tok) { $('lisMsg').textContent = t('Écoute impossible : vérifiez votre connexion.'); lisStop(); } };
-  try { const src = await lisBlob(lisUrl(s, a)); if (tok !== lis.tok) return; lis.au.src = src; lis.au.playbackRate = lis.rate; lis.au.preservesPitch = true; lis.au.onended = () => lisNext(tok); lis.au.onerror = fail; await lis.au.play(); lis.au.playbackRate = lis.rate; } catch (e) { return fail(); }
-  const vs = lisVerses(curPage), k = vs.findIndex(v => v[0] === s && v[1] === a), nx = vs[k + 1]; if (nx) lisBlob(lisUrl(nx[0], nx[1])).catch(() => {});
+  if (tok !== lis.tok) return; lis.last = [s, a]; $('lisMsg').textContent = ''; const u = lisUrl(s, a);
+  const fail = () => { if (tok === lis.tok) { $('lisMsg').textContent = t('Écoute impossible : vérifiez votre connexion.'); lisStop(); } };
+  let el = lis.A[1 - lis.cur];
+  if (el.dataset.u === u && el.readyState >= 2) { lis.cur = 1 - lis.cur; } // le verset suivant était déjà prêt : il part tout de suite
+  else { el = lis.A[lis.cur]; let src; try { src = await lisBlob(u); } catch (e) { return fail(); } if (tok !== lis.tok) return; if (el.dataset.u !== u || el.ended || el.error) { el.dataset.u = u; el.src = src; } }
+  lis.A.forEach(x => { if (x !== el) { try { x.pause(); } catch (e) {} } }); lis.au = el;
+  el.onended = () => { if (tok === lis.tok && lis.au === el) lisNext(tok); }; el.onerror = () => { if (tok === lis.tok && lis.au === el) { el.dataset.u = ''; lis.cache.delete(u); lisVerse(s, a, tok); } };
+  try { el.currentTime = 0; } catch (e) {} el.playbackRate = lis.rate; el.preservesPitch = true;
+  let ok = false; for (let k = 0; k < 3 && !ok; k++) { try { await el.play(); ok = true; } catch (e) { if (tok !== lis.tok) return; if (e && e.name === 'NotAllowedError') break; await lisWait(400); } }
+  if (tok !== lis.tok) return; if (!ok) return fail(); el.playbackRate = lis.rate; lisMeta(s, a);
+  // l'écran suit : page du verset, puis surlignage
+  const pg = PAGE_OF.get(key(s, a, 0)); if (pg && pg !== curPage && !document.hidden) { try { await renderPage(pg); } catch (e) {} if (tok !== lis.tok) return; }
+  lis.pg = pg; if (!document.hidden) { $('pageBox').classList.add('show'); lisMark(s, a); }
+  let n = lisAfter(s, a); if (n) { lisPrep(lis.A[1 - lis.cur], n[0], n[1], tok); for (let k = 0; k < 3 && (n = lisAfter(n[0], n[1])); k++) lisBlob(lisUrl(n[0], n[1])).catch(() => {}); }
 }
-async function lisNext(tok) {
-  if (tok !== lis.tok || !lis.on) return; let vs = lisVerses(curPage), k = lis.last ? vs.findIndex(v => v[0] === lis.last[0] && v[1] === lis.last[1]) : -1;
-  if (k + 1 < vs.length) return lisVerse(vs[k + 1][0], vs[k + 1][1], tok);
-  if (curPage >= 604) return lisStop();
-  await renderPage(curPage + 1); if (tok !== lis.tok) return; vs = lisVerses(curPage); k = lis.last ? vs.findIndex(v => v[0] === lis.last[0] && v[1] === lis.last[1]) : -1; if (vs[k + 1]) lisVerse(vs[k + 1][0], vs[k + 1][1], tok); else lisStop();
-}
+function lisNext(tok) { if (tok !== lis.tok || !lis.on) return; const n = lis.last && lisAfter(lis.last[0], lis.last[1]); if (!n) return lisStop(); lisVerse(n[0], n[1], tok); }
+document.addEventListener('visibilitychange', async () => { if (document.hidden || !lis.on || !lis.last) return; const tok = lis.tok, [s, a] = lis.last, pg = PAGE_OF.get(key(s, a, 0)); if (pg && pg !== curPage) { try { await renderPage(pg); } catch (e) {} } if (tok === lis.tok && lis.last && lis.last[0] === s && lis.last[1] === a) { $('pageBox').classList.add('show'); lisMark(s, a); } });
+try { const ms = navigator.mediaSession; if (ms) {
+  ms.setActionHandler('pause', () => { if (lis.on) { lis.paused = true; lis.au.pause(); ms.playbackState = 'paused'; } });
+  ms.setActionHandler('play', () => { if (lis.on) { lis.paused = false; lis.au.play().catch(() => {}); ms.playbackState = 'playing'; } });
+  ms.setActionHandler('stop', () => lisStop());
+  ms.setActionHandler('nexttrack', () => { if (lis.on) lisNext(lis.tok); });
+  ms.setActionHandler('previoustrack', () => { if (lis.on && lis.last) { const [s, a] = lis.last; if (a > 0) lisVerse(s, a - 1, lis.tok); else lisVerse(s, a, lis.tok); } });
+} } catch (e) {}
 function lisToggle() {
   if (lis.on) return lisStop(); if (recording || busyNow()) return;
   const vs = lisVerses(curPage); if (!vs.length) return; lis.on = true; const tok = ++lis.tok; lis.last = null; lisUI(); lisVerse(vs[0][0], vs[0][1], tok);
 }
 { const sel = $('lisRec'); RECS.forEach(([f, n]) => { const o = document.createElement('option'); o.value = f; o.textContent = n; sel.appendChild(o); });
-  sel.addEventListener('change', () => { lis.rec = sel.value; localStorage.setItem('mcf-rec', lis.rec); if (lis.on && lis.last) { const tok = ++lis.tok; lisVerse(lis.last[0], lis.last[1], tok); } });
-  document.querySelectorAll('#lisRates button').forEach(b => b.addEventListener('click', () => { lis.rate = +b.dataset.r; localStorage.setItem('mcf-rate', lis.rate); lis.au.playbackRate = lis.rate; lisUI(); }));
+  sel.addEventListener('change', () => { lis.rec = sel.value; localStorage.setItem('mcf-rec', lis.rec); lis.cache.clear(); lis.A.forEach(x => { x.dataset.u = ''; }); if (lis.on && lis.last) { const tok = ++lis.tok; lisVerse(lis.last[0], lis.last[1], tok); } });
+  document.querySelectorAll('#lisRates button').forEach(b => b.addEventListener('click', () => { lis.rate = +b.dataset.r; localStorage.setItem('mcf-rate', lis.rate); lis.A.forEach(x => { x.playbackRate = lis.rate; }); lisUI(); }));
   $('lisPlay').addEventListener('click', lisToggle);
   $('lisBtn').addEventListener('click', () => { $('lisSheet').classList.add('on'); lisUI(); });
   $('lisClose').addEventListener('click', () => $('lisSheet').classList.remove('on'));
@@ -2015,6 +2048,11 @@ function lisToggle() {
 $('homeBtn').addEventListener('click', () => { if (!busyNow()) show('home'); });
 
 if (window.ResizeObserver) new ResizeObserver(() => { if (pageOk && $('pageBox').children.length) fit(); }).observe($('pageWrap'));
+
+{ const eb = $('eyeBtn'), sync = () => eb.classList.toggle('vis', !opts.hide); eb.addEventListener('click', () => { opts.hide = !opts.hide; $('hide').checked = opts.hide; saveOpts(); veil(); sync(); }); $('hide').addEventListener('change', sync); sync(); }
+
+{ const h = $('homeBtn'); document.querySelector('.recTop').prepend(h); h.classList.add('topHome'); }
+window.__lis = lis;
 
 </script>
 </body>
