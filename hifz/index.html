@@ -128,7 +128,7 @@
   .lisBox { background:#fff; width:100%; border-radius:24px 24px 0 0; padding:18px 18px calc(20px + env(safe-area-inset-bottom,0px)); }
   .lisBox h3 { margin:0 0 12px; font-size:1.2rem; display:flex; justify-content:space-between; align-items:center; } .lisBox h3 button { width:36px; height:36px; border:0; border-radius:50%; background:var(--mint); font-size:1.3rem; }
   .lisBox label { display:block; font-size:.85rem; font-weight:700; color:#5B6B7C; margin:10px 0 6px; } .lisBox select { width:100%; padding:12px; border-radius:12px; border:1.5px solid var(--mint); font:inherit; background:#fff; }
-  #lisRates { display:flex; gap:6px; } #lisRates button { flex:1; padding:11px 0; border:0; border-radius:12px; background:var(--mint); font:inherit; font-weight:700; } #lisRates button.on { background:var(--em); color:#fff; }
+  #lisRates { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; } #lisRates button { flex:1; padding:11px 0; border:0; border-radius:12px; background:var(--mint); font:inherit; font-weight:700; } #lisRates button.on { background:var(--em); color:#fff; }
   #lisPlay { margin-top:16px; width:100%; padding:15px; border:0; border-radius:16px; background:var(--em); color:#fff; font:inherit; font-weight:800; font-size:1.05rem; } #lisPlay .p2 { display:none; } #lisPlay.on .p1 { display:none; } #lisPlay.on .p2 { display:inline; }
   #lisMsg { color:#C62828; font-size:.9rem; margin-top:8px; min-height:1em; }
 
@@ -141,6 +141,10 @@
   body.v-recite:not(.eval) .pg { width:40px; height:40px; } body.v-recite:not(.eval) .pg svg { width:20px; height:20px; }
   body.v-recite:not(.eval) .mic { width:56px; height:56px; box-shadow:0 0 0 3px #fff, 0 6px 16px rgba(1,215,88,.4); }
   body.v-recite:not(.eval) #micLabel { display:none; }
+
+  body.v-recite:not(.eval) #pageWrap::after { height:0 !important; }
+  body.v-recite:not(.eval) #pageBox { margin:0 auto auto; }
+  #passSheet .premHero { height:128px; margin:0; } .premLead { font-size:.92rem !important; line-height:1.35 !important; margin:0 0 4px !important; } .premSub { font-size:.95rem !important; margin-bottom:6px !important; } .pcmp .row { padding:7px 0 !important; font-size:.82rem !important; } #passSheet .premHero { height:104px !important; }
   .dockRow { display:flex; align-items:center; gap:26px; direction:ltr; }
   .pg { width:44px; height:44px; border-radius:50%; border:0; background:var(--mint); display:flex; align-items:center; justify-content:center; } .pg svg { width:22px; height:22px; }
   body.rec .pg, body.eval .pg { visibility:hidden; }
@@ -370,7 +374,7 @@
   /* Premium */
   #passSheet.on { align-items:stretch; } #passSheet .bsheet { max-width:none; height:100%; max-height:none; border-radius:0; overflow-y:auto; padding:14px 18px calc(22px + env(safe-area-inset-bottom, 0px)); background:linear-gradient(#BFE0F5,#E4F3FC 34%,#fff 56%); animation:none; }
   .premTop { display:flex; align-items:center; justify-content:space-between; } .premTop b { font-size:1.15rem; font-weight:900; letter-spacing:.04em; color:#0B2A4A; } .premX { width:38px; height:38px; border-radius:50%; border:2px solid #0B2A4A; background:#fff; font-size:1.3rem; line-height:1; cursor:pointer; color:#0B2A4A; }
-  .premHero { height:230px; position:relative; margin:6px 0 4px; } .premHero svg { width:100%; height:100%; overflow:visible; }
+  .premHero { height:128px; position:relative; margin:6px 0 4px; } .premHero svg { width:100%; height:100%; overflow:visible; }
   .ph-float { animation:phf 3.6s ease-in-out infinite; transform-origin:center; transform-box:fill-box; } .ph-float.b { animation-delay:-1.2s; animation-duration:4.4s; } .ph-float.c { animation-delay:-2.2s; animation-duration:3.1s; } @keyframes phf { 50% { transform:translateY(-9px) rotate(2deg); } }
   .ph-pulse { animation:php 2.4s ease-in-out infinite; transform-origin:center; transform-box:fill-box; } @keyframes php { 50% { transform:scale(1.08); } }
   .premLead { font-size:1.12rem; line-height:1.4; color:#0B2A4A; margin:6px 0 10px; } .premLead b { font-weight:800; } .premSub { font-size:1.2rem; font-weight:700; color:#5B6B7C; line-height:1.3; margin-bottom:14px; }
@@ -743,7 +747,7 @@
 <div class="backdrop" id="lisSheet"><div class="lisBox">
   <h3><span>Écoute</span><button id="lisClose" aria-label="Fermer">×</button></h3>
   <label for="lisRec">Récitant</label><select id="lisRec"></select>
-  <label>Vitesse</label><div id="lisRates"><button data-r="0.5">0,5x</button><button data-r="0.75">0,75x</button><button data-r="1">1x</button><button data-r="1.25">1,25x</button><button data-r="1.5">1,5x</button><button data-r="1.75">1,75x</button></div>
+  <label>Vitesse</label><div id="lisRates"><button data-r="0.5">0,5x</button><button data-r="0.75">0,75x</button><button data-r="1">1x</button><button data-r="1.25">1,25x</button><button data-r="1.5">1,5x</button><button data-r="1.75">1,75x</button><button data-r="2">2x</button><button data-r="2.25">2,25x</button></div>
   <button id="lisPlay"><span class="p1">Écouter cette page</span><span class="p2">Arrêter l'écoute</span></button><div id="lisMsg"></div>
 </div></div>
 <div class="backdrop" id="passSheet"><div class="bsheet">
@@ -1158,15 +1162,20 @@ function pageFont(p) { if (!fontReady[p]) fontReady[p] = loadFont('qp' + p, 'QPC
 let xFonts = null, bsmOk = false, suraOk = false; // basmala calligraphiée et titres de sourate du mushaf
 function extraFonts() { if (!xFonts) xFonts = Promise.all([loadFont('qbsm', 'QPC1/QPC1BSML.ttf').then(ok => { bsmOk = ok; }), loadFont('qsura', 'Surahs.ttf').then(ok => { suraOk = ok; })]); return xFonts; }
 function posInfo(p) { let it; for (const l of PG[p]) if (l.t === 'T') { it = l.items.find(x => !x.m); if (it) break; } const id = ayId(it.s, it.a); let j = 1; while (j < 30 && LISTS.J[j + 1] <= id) j++; return { s: it.s, juz: j }; }
-function fit() { // écriture naturelle : la page prend la largeur, les lignes gardent leur taille, la page défile
+const canScroll = () => { const w = $('pageWrap'); return w.scrollHeight > w.clientHeight + 6; };
+function fit() { // page fixe : toute la page tient à l'écran, écriture à sa taille naturelle, lignes réparties sur la hauteur
   const box = $('pageBox'), wrap = $('pageWrap'); if (!box.children.length || !wrap.clientWidth) return;
-  box.style.width = box.style.lineHeight = ''; if (!pageOk) { box.style.fontSize = ''; return; }
+  box.style.width = box.style.lineHeight = ''; if (!pageOk) { box.style.fontSize = ''; wrap.style.overflowY = ''; return; }
   const lines = [...box.querySelectorAll('.qline')]; if (!lines.length) return;
   const cs = getComputedStyle(wrap), W = Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
   box.style.setProperty('--bw', W + 'px'); box.style.width = W + 'px';
   box.style.fontSize = '20px'; let mx = 0; const nat = lines.map(l => { let w = 0; for (const c of l.children) w += c.getBoundingClientRect().width; mx = Math.max(mx, w); return w; });
-  if (!mx) return; const fs = Math.min(46, 20 * W / mx), lh = Math.max(fs * 1.9, W * 0.118);
-  box.style.fontSize = fs + 'px'; box.style.lineHeight = lh + 'px';
+  if (!mx) return;
+  const heads = [...box.querySelectorAll('.shead')], hh = heads.reduce((a, h) => a + h.offsetHeight, 0), n = Math.max(1, box.children.length - heads.length);
+  const reserve = document.body.classList.contains('eval') ? 0 : 76, Hav = wrap.clientHeight - reserve - 4;
+  const fsW = Math.min(46, 20 * W / mx); let lh = Math.min((Hav - hh) / n, fsW * 1.95); lh = Math.max(lh, 18);
+  const fs = Math.min(fsW, lh / 1.4);
+  box.style.fontSize = fs + 'px'; box.style.lineHeight = lh + 'px'; wrap.style.overflowY = 'hidden';
   lines.forEach((l, k) => l.classList.toggle('short', nat[k] < mx * 0.78));
 }
 function veil() { $('pageBox').classList.toggle('show', finished || !opts.hide); text.classList.toggle('show', finished); }
@@ -1468,7 +1477,7 @@ function paint(final) {
   for (const g of bsmGroups) { const ss = g.idx.map(i => shown[i]), bad = g.idx.find(i => ['wrong', 'missed', 'doubt', 'vowel'].includes(shown[i]));
     const st = ss.filter(s => s === 'ok').length < 3 ? 'pending' : ss.every(s => s === 'missed' || s === 'notreached') ? 'pending' : ss.some(s => s === 'wrong' || s === 'missed') ? (ss.every(s => s === 'missed') ? 'missed' : 'wrong') : ss.some(s => s === 'doubt' || s === 'vowel') ? 'doubt' : ss.every(s => s === 'ok') ? 'ok' : finished ? 'notreached' : 'pending';
     g.sp.dataset.i = bad != null ? bad : g.idx[0]; set(g.sp, st); }
-  if (!finished && cur >= 0) { const sp = pageSpans.get(cur); sp.classList.add('cur'); const wr = $('pageWrap').getBoundingClientRect(), r = sp.getBoundingClientRect(); if (r.bottom > wr.bottom - 40 || r.top < wr.top + 20) sp.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  if (!finished && cur >= 0) { const sp = pageSpans.get(cur); sp.classList.add('cur'); if (!canScroll()) {} else { const wr = $('pageWrap').getBoundingClientRect(), r = sp.getBoundingClientRect(); if (r.bottom > wr.bottom - 40 || r.top < wr.top + 20) sp.scrollIntoView({ block: 'center', behavior: 'smooth' }); } }
 }
 const reached = () => mode === 'recite' ? matcher.pos() : matcher.st.length;
 function bsmRead(su) { const st = matcher.st; let n = 0; for (let i = 0; i < st.length; i++) if (st[i] === 'ok' && wordRef[i][1] === -1 && wordRef[i][0] === su) n++; return n >= 3; }
@@ -1532,7 +1541,7 @@ function moveEst() { // curseur d'avance : suit la voix sans attendre le moteur 
   let v = 0; for (let f = Math.floor(estInfo.endAbs / 320); f < frameE.length; f++) if (frameE[f] > lastThr) v++; // seulement le temps où la voix passe : une pause n'avance pas le curseur
   const dt = v * 0.02, k = Math.min(estInfo.to + 1 + Math.floor(estRate * dt * 0.7), estInfo.to + 5, expected.length - 1);
   if (k <= liveCur && k <= matcher.pos() - 1) return; if (k === estIdx) return; estIdx = k;
-  estList.forEach(s => s.classList.remove('est')); estList = []; for (let q = Math.max(0, Math.max(matcher.pos(), k - 4)); q <= k; q++) { const sp = mode === 'eval' ? spans[q] : pageSpans.get(q); if (sp && shown[q] === 'notreached') { sp.classList.add('est'); estList.push(sp); } } { const e0 = estList[estList.length - 1]; if (e0 && !finished && mode !== 'eval') { const wr = $('pageWrap').getBoundingClientRect(), r = e0.getBoundingClientRect(); if (r.bottom > wr.bottom - 40) e0.scrollIntoView({ block: 'center', behavior: 'smooth' }); } } estSp = estList[estList.length - 1] || null; markLine();
+  estList.forEach(s => s.classList.remove('est')); estList = []; for (let q = Math.max(0, Math.max(matcher.pos(), k - 4)); q <= k; q++) { const sp = mode === 'eval' ? spans[q] : pageSpans.get(q); if (sp && shown[q] === 'notreached') { sp.classList.add('est'); estList.push(sp); } } { const e0 = estList[estList.length - 1]; if (e0 && !finished && mode !== 'eval' && canScroll()) { const wr = $('pageWrap').getBoundingClientRect(), r = e0.getBoundingClientRect(); if (r.bottom > wr.bottom - 40) e0.scrollIntoView({ block: 'center', behavior: 'smooth' }); } } estSp = estList[estList.length - 1] || null; markLine();
 }
 function liveTick(final) {
   if (!final && recording) moveEst();
@@ -1962,12 +1971,12 @@ function dareFinish() {
 $('myName').value = store.get('mcf-name', ''); $('myName').addEventListener('input', e => store.set('mcf-name', e.target.value.trim().slice(0, 20)));
 
 /* ---------- Écoute : un récitant lit la page, verset par verset, avec suivi à l'écran ---------- */
-const RECS = [['Husary_128kbps_Mujawwad', 'Mahmoud Khalil Al-Husary (Mujawwad)'], ['Husary_128kbps', 'Mahmoud Khalil Al-Husary (Murattal)'], ['Alafasy_128kbps', 'Mishary Alafasy'], ['Abdul_Basit_Murattal_192kbps', 'Abdul Basit (Murattal)'], ['Abdul_Basit_Mujawwad_128kbps', 'Abdul Basit (Mujawwad)'], ['Minshawy_Murattal_128kbps', 'Mohamed Al-Minshawi'], ['Abu_Bakr_Ash-Shaatree_128kbps', 'Abu Bakr Ash-Shatri'], ['Hudhaify_128kbps', 'Ali Al-Hudhaify'], ['MaherAlMuaiqly128kbps', 'Maher Al-Muaiqly'], ['Abdurrahmaan_As-Sudais_192kbps', 'Abdurrahman As-Sudais']];
+const RECS = [['Husary_128kbps_Mujawwad', 'Mahmoud Khalil Al-Husary (Mujawwad)'], ['Husary_128kbps', 'Mahmoud Khalil Al-Husary (Murattal)'], ['Muhammad_Ayyoub_128kbps', 'Muhammad Ayyoub'], ['Alafasy_128kbps', 'Mishary Alafasy'], ['Ali_Jaber_64kbps', 'Ali Jaber'], ['Yasser_Ad-Dussary_128kbps', 'Yasser Ad-Dawsari'], ['Abdurrahmaan_As-Sudais_192kbps', 'Abdurrahman As-Sudais'], ['Abdul_Basit_Murattal_192kbps', 'Abdul Basit (Murattal)'], ['Abdul_Basit_Mujawwad_128kbps', 'Abdul Basit (Mujawwad)'], ['Minshawy_Murattal_128kbps', 'Mohamed Al-Minshawi'], ['Abu_Bakr_Ash-Shaatree_128kbps', 'Abu Bakr Ash-Shatri'], ['Hudhaify_128kbps', 'Ali Al-Hudhaify'], ['MaherAlMuaiqly128kbps', 'Maher Al-Muaiqly']];
 const lis = { on: false, rec: localStorage.getItem('mcf-rec') || RECS[0][0], rate: +localStorage.getItem('mcf-rate') || 1, au: new Audio(), last: null, tok: 0 };
 lis.au.preload = 'auto';
 const lisVerses = p => { const out = [], seen = new Set(); for (const l of PG[p] || []) { if (!l.items) continue; for (const it of l.items) { if (it.m) continue; const k = it.s + ':' + it.a; if (!seen.has(k)) { seen.add(k); out.push([it.s, it.a]); } } } return out; };
 const pad3 = n => String(n).padStart(3, '0');
-function lisMark(s, a) { $('pageBox').querySelectorAll('.lis').forEach(e => e.classList.remove('lis')); const els = $('pageBox').querySelectorAll('[data-v="' + s + ':' + a + '"]'); els.forEach(e => e.classList.add('lis')); if (els[0]) { const wr = $('pageWrap').getBoundingClientRect(), r = els[0].getBoundingClientRect(); if (r.top < wr.top + 20 || r.bottom > wr.bottom - 60) els[0].scrollIntoView({ block: 'center', behavior: 'smooth' }); } }
+function lisMark(s, a) { $('pageBox').querySelectorAll('.lis').forEach(e => e.classList.remove('lis')); const els = $('pageBox').querySelectorAll('[data-v="' + s + ':' + a + '"]'); els.forEach(e => e.classList.add('lis')); if (els[0] && canScroll()) { const wr = $('pageWrap').getBoundingClientRect(), r = els[0].getBoundingClientRect(); if (r.top < wr.top + 20 || r.bottom > wr.bottom - 60) els[0].scrollIntoView({ block: 'center', behavior: 'smooth' }); } }
 function lisUI() { $('lisPlay').classList.toggle('on', lis.on); $('lisBtn').classList.toggle('on', lis.on); document.querySelectorAll('#lisRates button').forEach(b => b.classList.toggle('on', +b.dataset.r === lis.rate)); $('lisRec').value = lis.rec; }
 function lisStop() { if (!lis.on && !lis.au.src) return; lis.on = false; lis.tok++; lis.au.pause(); $('pageBox').querySelectorAll('.lis').forEach(e => e.classList.remove('lis')); try { veil(); } catch (e) {} lisUI(); }
 const lisUrl = (s, a) => 'https://everyayah.com/data/' + lis.rec + '/' + pad3(s + 1) + pad3(a + 1) + '.mp3'; lis.cache = new Map();
