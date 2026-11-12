@@ -7,13 +7,13 @@
 <title>Mémoriser le Coran facilement</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <script>window.coi = { quiet: true };</script>
 <script src="coi-serviceworker.min.js"></script>
 <style>
   :root {
     --em:#01D758; --deep:#063D2B; --mint:#EAFBF1; --mint2:#CFF5DF; --sun:#FFC300; --sun2:#FFF4CC; --red:#E5383B; --red2:#FDE8E8; --ink2:#4C7163; --paper:#FFFFFF;
-    --ui: "Bricolage Grotesque", system-ui, sans-serif; --qr: "Amiri", "Scheherazade New", serif;
+    --ui: "Poppins", system-ui, sans-serif; --qr: "Amiri", "Scheherazade New", serif;
   }
   * { box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
   html { background: var(--deep); }
@@ -173,6 +173,55 @@
   .party span { display:block; font-size:.95rem; font-weight:400; color: var(--mint2); margin-top:6px; animation: rise .6s .75s both; }
   .party .box { position:relative; padding:0 24px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+
+  /* ===== Version 4 : plus simple, plus lumineuse ===== */
+  body { background:#F3FBF6; }
+  .top { background: linear-gradient(160deg, #01D758 0%, #00B34A 100%); padding: 20px 18px 62px; border-radius: 0 0 30px 30px; }
+  .top svg.pattern { opacity:.16; }
+  .brand h1 { font-size:1.12rem; font-weight:800; letter-spacing:-.01em; }
+  .brand p { color:#fff; opacity:.92; font-size:.78rem; }
+  .brand .mark g { fill:#fff; } .brand .mark path:first-of-type { fill:#00B34A; } .brand .mark path:last-of-type { stroke:#fff; }
+  .progBtn { background:#fff; color:var(--deep); box-shadow:0 4px 14px rgba(6,61,43,.18); border-radius:99px; padding:8px 14px; }
+  .progBtn svg { color:#FF9D00; }
+  .modes { margin:-40px 16px 0; position:relative; }
+  .seg.mode { background:#fff; padding:5px; border-radius:99px; box-shadow:0 10px 26px rgba(6,61,43,.16); }
+  .seg.mode button { border-radius:99px; padding:13px 4px; font-size:1rem; }
+  .seg.mode button.on { background:var(--deep); color:#fff; box-shadow:none; }
+  .passBar { display:flex; align-items:center; gap:12px; width:calc(100% - 32px); margin:14px 16px 0; background:#fff; border:0; border-radius:20px; padding:12px 14px; text-align:left; cursor:pointer; box-shadow:0 4px 16px rgba(6,61,43,.08); }
+  .passBar .pIcon { width:46px; height:46px; border-radius:14px; background:var(--sun); display:flex; align-items:center; justify-content:center; flex:none; }
+  .passBar .pIcon svg { width:26px; height:26px; }
+  .passBar .pTxt { flex:1; min-width:0; }
+  .passBar b { display:block; font-size:1.08rem; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .passBar small { display:block; font-size:.8rem; color:var(--ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .passBar .pGo { background:var(--mint); border-radius:99px; padding:8px 14px; font-weight:800; font-size:.85rem; flex:none; }
+  .evalNote { margin:10px 20px 0; font-size:.84rem; color:var(--ink2); }
+  .pickSheet { position:fixed; inset:0; z-index:14; background:rgba(6,61,43,.45); display:none; align-items:flex-end; }
+  .pickSheet.on { display:flex; animation: fadeIn .2s; }
+  .pickSheet .picker { margin:0; width:100%; border-radius:28px 28px 0 0; padding:20px 18px calc(20px + env(safe-area-inset-bottom, 0px)); box-shadow:none; animation: rise .3s cubic-bezier(.2,.8,.2,1); }
+  .pickSheet h3 { grid-column:1 / -1; margin:0 0 2px; font-size:1.15rem; font-weight:800; }
+  .pickOk { grid-column:1 / -1; background:var(--em); border:0; border-radius:16px; padding:15px; font-weight:800; font-size:1.05rem; cursor:pointer; margin-top:6px; }
+  .mushaf { margin:16px 16px 0; padding:0; background:none; border-radius:24px; box-shadow:0 6px 24px rgba(6,61,43,.10); }
+  .mushaf .inner { border:0; border-radius:24px; padding:0 16px 22px; }
+  .cartouche { margin:0 -16px 12px; background:none; border-bottom:0; padding:20px 12px 6px; }
+  .cartouche svg { display:none; }
+  .cartouche .ar { font-size:2.1rem; }
+  .cartouche .ar::after { content:""; display:block; width:54px; height:5px; border-radius:99px; background:var(--sun); margin:6px auto 0; }
+  .cartouche .fr { margin-top:8px; }
+  .bsm { display:block; text-align:center; margin:0 0 6px; }
+  .subhead { border:0; background:none; margin-top:22px; }
+  .subhead::after { content:""; display:block; width:40px; height:4px; border-radius:99px; background:var(--sun); margin:0 auto; }
+  .ay { background:var(--sun); border:0; color:var(--deep); }
+  .dock { box-shadow:0 -10px 34px rgba(6,61,43,.12); border-radius:30px 30px 0 0; }
+  .mic { box-shadow: 0 0 0 6px #fff, 0 0 0 9px var(--sun), 0 12px 26px rgba(1,215,88,.45); }
+  .mic.rec { box-shadow: 0 0 0 6px #fff, 0 0 0 9px var(--em), 0 12px 26px rgba(6,61,43,.35); }
+  .mic.busy { box-shadow:none; }
+  .engState { font-size:.74rem; font-weight:600; color:var(--ink2); display:flex; align-items:center; gap:6px; }
+  .engState::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--sun); animation: blink 1s infinite; }
+  .engState.ok::before { background:var(--em); animation:none; }
+  @keyframes blink { 50% { opacity:.25; } }
+  .results { background:#fff; border-radius:24px; padding:18px 16px; margin:16px 16px 0; box-shadow:0 6px 24px rgba(6,61,43,.10); }
+  .party h3 { font-size:2.8rem; }
+
 </style>
 </head>
 <body>
@@ -186,16 +235,20 @@
   </div>
 </div>
 
-<div class="picker">
-  <div class="seg mode" id="modeSeg"><button data-v="recite" class="on">Réciter</button><button data-v="eval">Évaluation</button></div>
+<div class="modes"><div class="seg mode" id="modeSeg"><button data-v="recite" class="on">Réciter</button><button data-v="eval">Évaluation</button></div></div>
+<button class="passBar" id="passBar"><span class="pIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.500c2.700-1.200 5.300-1.200 8 .500 2.700-1.700 5.300-1.700 8-.500v13c-2.700-1.200-5.300-1.200-8 .500-2.700-1.700-5.300-1.700-8-.500zM12 6v13"/></svg></span><span class="pTxt"><b id="passMain"></b><small id="passSub"></small></span><span class="pGo">Changer</span></button>
+<div class="evalNote" id="evalHint" style="display:none">4 reprises à des endroits inattendus du passage, pour vérifier que vous savez enchaîner partout.</div>
+
+<div class="pickSheet" id="pickSheet"><div class="picker">
+  <h3>Que voulez-vous réciter ?</h3>
   <div class="seg" id="unitSeg"><button data-v="sura" class="on">Sourate</button><button data-v="juz">Juz</button><button data-v="hizb">Hizb</button><button data-v="page">Page</button></div>
   <div id="suraBox"><label for="sura">Sourate</label><select id="sura"></select></div>
   <div id="fromBox"><label for="from">Du verset</label><input id="from" type="number" min="1" value="1" inputmode="numeric"></div>
   <div id="toBox"><label for="to">au verset</label><input id="to" type="number" min="1" value="1" inputmode="numeric"></div>
   <div class="full" id="numBox" style="display:none"><label for="num" id="numLbl">Juz</label><select id="num"></select></div>
-  <div class="hideRow" id="hideRow"><input class="switch" id="hide" type="checkbox" checked><label for="hide" style="margin:0;font-size:.86rem;font-weight:400">Cacher le texte pour réciter de mémoire</label></div>
-  <div class="hint" id="evalHint" style="display:none">L'évaluation vous fait reprendre à 4 endroits inattendus du passage, pour vérifier que vous savez enchaîner partout.</div>
-</div>
+  <div class="hideRow" id="hideRow"><input class="switch" id="hide" type="checkbox" checked><label for="hide" style="margin:0;font-size:.9rem;font-weight:400">Cacher le texte pour réciter de mémoire</label></div>
+  <button class="pickOk" id="pickOk">Valider</button>
+</div></div>
 
 <section class="results" id="results" aria-live="polite">
   <h2>Vos résultats</h2>
@@ -211,7 +264,8 @@
   </div>
   <p class="verdict" id="verdict"></p>
   <p class="fix">Touchez un mot rouge ou jaune pour voir ce que vous avez récité.</p>
-  <details class="heardBox"><summary>Ce qui a été entendu</summary><div class="heard" id="heard"></div><div id="timing"></div></details>
+  <details class="heardBox"><summary>Ce qui a été entendu</summary><div class="heard" id="heard"></div></details>
+  <p class="fix" id="timing"></p>
 </section>
 
 <div class="mushaf"><div class="inner">
@@ -232,6 +286,7 @@
     <svg class="ic-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></svg>
   </button>
   <div class="micLabel" id="micLabel">Commencer la récitation</div>
+  <div class="engState" id="engState">Préparation du moteur vocal…</div>
   <div class="eng" id="eng"><div class="bar"><i id="engBar"></i></div><span id="engTxt"></span></div>
   <div class="alt" id="alt">Le micro en direct ne fonctionne que si la page est ouverte par un lien internet. Ici, vous pouvez faire écouter un enregistrement.<button id="pickBtn">Choisir ou enregistrer un audio</button></div>
   <button class="fileLink" id="fileLink">Faire écouter un enregistrement</button>
@@ -493,6 +548,7 @@ const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? 
 const AY = [null]; QURAN.forEach((s, i) => s.v.forEach((_, a) => AY.push([i, a]))); // identifiant global du verset -> [sourate, verset]
 const UNITS = { juz: { n: 30, lbl: 'Juz', ar: 'الجزء', range: k => [LISTS.J[k], LISTS.J[k + 1] - 1] }, hizb: { n: 60, lbl: 'Hizb', ar: 'الحزب', range: k => [LISTS.Q[4 * (k - 1) + 1], LISTS.Q[4 * k + 1] - 1] }, page: { n: 604, lbl: 'Page', ar: 'الصفحة', range: k => [LISTS.P[k], LISTS.P[k + 1] - 1] } };
 let mode = 'recite', unit = 'sura';
+const BASMALA = QURAN[0].v[0].split(/\s+/).filter(Boolean);
 let verses = [], expected = [], spans = [], wordRef = [], verseStarts = [], matcher = null, finished = false, shown = [];
 
 function passage() { // liste des versets du passage choisi
@@ -511,6 +567,11 @@ function render(list, cue) {
   let prevS = list.length ? list[0][0] : -1;
   for (const [s, a] of list) {
     if (s !== prevS) { const h = document.createElement('span'); h.className = 'subhead'; h.textContent = 'سورة ' + QURAN[s].n; text.appendChild(h); prevS = s; }
+    if (a === 0 && s !== 0 && s !== 8 && !cue) { // basmala à réciter avant la sourate (sauf Al-Fatiha, où elle est le verset 1, et At-Tawba)
+      const line = document.createElement('span'); line.className = 'bsm'; verseStarts.push(expected.length);
+      BASMALA.forEach((w, wi) => { const sp = document.createElement('span'); sp.className = 'w pending'; sp.textContent = w; sp.dataset.i = expected.length; line.appendChild(sp); line.appendChild(document.createTextNode(' ')); expected.push(w); spans.push(sp); wordRef.push([s, -1, wi]); });
+      text.appendChild(line);
+    }
     verseStarts.push(expected.length);
     QURAN[s].v[a].split(/\s+/).filter(Boolean).forEach((w, wi) => {
       const sp = document.createElement('span'); sp.className = 'w pending'; sp.textContent = w; sp.dataset.i = expected.length;
@@ -518,7 +579,7 @@ function render(list, cue) {
     });
     const m = document.createElement('span'); m.className = 'ay'; m.textContent = a + 1; text.appendChild(m); text.appendChild(document.createTextNode(' '));
   }
-  const tt = title(); $('suraAr').textContent = tt[0]; $('suraFr').textContent = tt[1];
+  const tt = title(); $('suraAr').textContent = tt[0]; $('suraFr').textContent = tt[1]; $('passMain').textContent = tt[1].split(/ : |, /)[0]; $('passSub').textContent = tt[1].split(/ : |, /)[1] || (unit === 'sura' ? QURAN[+sura.value].v.length + ' versets' : '');
   $('cue').classList.toggle('on', !!cue); if (cue) $('cueTxt').textContent = QURAN[cue[0]].v[cue[1]] + ' (' + (cue[1] + 1) + ')';
   text.classList.toggle('veil', mode === 'eval' || $('hide').checked);
   matcher = makeMatcher(expected, verseStarts); shown = expected.map(() => 'notreached');
@@ -557,6 +618,9 @@ $('modeSeg').addEventListener('click', e => { const b = e.target.closest('button
 $('unitSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || busyNow()) return; unit = b.dataset.v; fillNum(); syncPicker(); refresh(); });
 sura.addEventListener('change', () => { from.value = 1; to.value = QURAN[+sura.value].v.length; refresh(); });
 [from, to, num].forEach(el => el.addEventListener('change', refresh));
+$('passBar').addEventListener('click', () => { if (!busyNow()) $('pickSheet').classList.add('on'); });
+$('pickOk').addEventListener('click', () => $('pickSheet').classList.remove('on'));
+$('pickSheet').addEventListener('click', e => { if (e.target === $('pickSheet')) $('pickSheet').classList.remove('on'); });
 $('hide').addEventListener('change', () => text.classList.toggle('veil', $('hide').checked && !finished));
 { const p = store.get('mcf-sel', {}); mode = p.mode || 'recite'; unit = p.unit || 'sura'; sura.value = p.s != null ? p.s : 111; from.value = p.f || 1; to.value = p.t || QURAN[+sura.value].v.length; fillNum(+p.n); syncPicker(); }
 
@@ -586,7 +650,10 @@ function load() {
     AutoProcessor.from_pretrained('${MODEL_ID}', { progress_callback: cb }),
     AutoTokenizer.from_pretrained('${MODEL_ID}', { progress_callback: cb }),
     WhisperForConditionalGeneration.from_pretrained('${MODEL_ID}', { dtype: 'q8', progress_callback: cb })
-  ]).then(a => { postMessage({ type: 'ready', threads: (env.backends.onnx.wasm.numThreads || 1), iso: !!self.crossOriginIsolated }); return a; });
+  ]).then(async a => {
+    // tour de chauffe : la toute première écoute est plusieurs fois plus lente, on la fait avant que l'élève commence
+    try { const f = (await a[0](new Float32Array(16000))).input_features.slice(null, null, [0, 400]); await a[2].generate({ input_features: f, language: 'arabic', task: 'transcribe', max_new_tokens: 4 }); } catch (e) {}
+    postMessage({ type: 'ready', threads: (env.backends.onnx.wasm.numThreads || 1), iso: !!self.crossOriginIsolated }); return a; });
   return loading;
 }
 async function hear(audio) {
@@ -614,8 +681,8 @@ function engine() {
   worker.onmessage = e => {
     const m = e.data;
     if (m.type === 'progress') { files[m.file] = [m.loaded, m.total]; let l = 0, t = 0; for (const k in files) { l += files[k][0]; t += files[k][1]; }
-      $('eng').classList.add('on'); $('engBar').style.width = Math.round(100 * l / t) + '%'; $('engTxt').textContent = 'Installation du moteur vocal, une seule fois : ' + Math.round(l / 1e6) + ' Mo sur ' + Math.round(t / 1e6); }
-    else if (m.type === 'ready') { engineReady = true; engineInfo = m.threads + ' fil' + (m.threads > 1 ? 's' : ''); $('eng').classList.remove('on'); store.set('mcf-engine', 1); }
+      $('eng').classList.add('on'); $('engBar').style.width = Math.round(100 * l / t) + '%'; $('engTxt').textContent = l >= t ? 'Mise en route du moteur vocal…' : (store.get('mcf-engine', 0) ? 'Chargement du moteur vocal…' : 'Installation du moteur vocal, une seule fois : ' + Math.round(l / 1e6) + ' Mo sur ' + Math.round(t / 1e6)); }
+    else if (m.type === 'ready') { engineReady = true; engineInfo = m.threads + ' fil' + (m.threads > 1 ? 's' : ''); $('eng').classList.remove('on'); $('engState').className = 'engState ok'; $('engState').textContent = 'Moteur vocal prêt'; store.set('mcf-engine', 1); }
     else if (m.type === 'error') { $('eng').classList.add('on'); $('engTxt').textContent = 'Le moteur vocal n\'a pas pu s\'installer. Vérifiez la connexion.'; }
     else if (m.type === 'result') { const r = waiting.get(m.id); waiting.delete(m.id); if (r) r(m); }
   };
@@ -625,7 +692,7 @@ function engine() {
 function warm() { if (!engineAsked) { engineAsked = true; engine().postMessage({ type: 'load' }); } }
 let nextId = 0;
 function transcribe(audio) { const id = nextId++; return new Promise(res => { waiting.set(id, res); engine().postMessage({ type: 'run', id, audio }, [audio.buffer]); }); }
-if (store.get('mcf-engine', 0)) warm();
+warm(); // le moteur se prépare dès l'ouverture de la page
 
 // ================= Session =================
 let session = 0, pendingJobs = 0, queue = [], onIdle = null, partialBusy = false, lastPartialLen = 0, previewIdx = [], lagMs = [], audioSecs = 0, tStart = 0, tStop = 0, heardAll = [];
@@ -668,6 +735,7 @@ function showResults(celebrate) {
   else if (c.bad === 0 && c.nr === 0) { v.classList.add('warn'); msg = 'Presque parfait. Revoyez les mots en jaune, puis récitez à nouveau.'; }
   else if (c.bad === 0 && c.ok === 0) { v.classList.add('warn'); msg = 'Je n\'ai pas reconnu ce passage dans votre récitation. Rapprochez le téléphone et récitez à nouveau.'; }
   else if (c.bad === 0) { v.classList.add('warn'); msg = 'Ce que vous avez récité est juste. Reprenez pour aller jusqu\'au bout du passage.'; }
+  else if (matcher.st.every((x, i) => x === 'ok' || (wordRef[i][1] === -1 && x === 'missed'))) { v.classList.add('warn'); msg = 'Vous avez oublié la basmala. Commencez la sourate par elle, puis récitez à nouveau.'; }
   else if (pct >= 85) { v.classList.add('warn'); msg = 'Très bien. Reprenez les mots en rouge avec le mushaf, puis récitez à nouveau.'; }
   else { v.classList.add('bad'); msg = mode === 'eval' ? 'Cet enchaînement est fragile. Relisez ces versets avec celui qui précède.' : 'Ce passage n\'est pas encore acquis. Revoyez-le avec le mushaf, puis récitez à nouveau.'; }
   if (mode === 'eval' && ev.round >= ROUNDS && celebrate) msg += ' Évaluation terminée : ' + (ev.perfect + (perfect ? 1 : 0)) + ' enchaînement' + (ev.perfect + (perfect ? 1 : 0) > 1 ? 's' : '') + ' sur ' + ROUNDS + ' sans faute.';
@@ -679,7 +747,7 @@ function showResults(celebrate) {
 function finish() {
   finished = true; previewIdx = []; matcher.finish(); paint(true); text.classList.remove('veil'); $('chips').classList.remove('on');
   const med = lagMs.length ? lagMs.slice().sort((a, b) => a - b)[Math.floor(lagMs.length / 2)] : 0;
-  $('timing').textContent = Math.round(audioSecs) + ' s de récitation. Moteur : ' + (med ? (med / 1000).toFixed(1) + ' s par écoute, ' : '') + engineInfo + '.';
+  $('timing').textContent = med ? 'Vitesse du moteur sur ce téléphone : ' + (med / 1000).toFixed(1) + ' s par écoute (' + engineInfo + ').' : '';
   const perfect = showResults(true); record(perfect);
   if (mode === 'eval') { if (perfect) ev.perfect++; ev.phase = 'done'; const last = ev.round >= ROUNDS; setIdle(last ? 'Appuyez pour recommencer une évaluation.' : 'Appuyez pour la manche suivante.', last ? 'Nouvelle évaluation' : 'Manche suivante'); if (last && ev.perfect === ROUNDS) party(ROUNDS + ' enchaînements réussis sur ' + ROUNDS + '.', 'Évaluation réussie'); else if (perfect) party(expected.length + ' mots enchaînés de mémoire, sans erreur.', 'Enchaînement maîtrisé'); }
   else { setIdle('Appuyez sur le micro pour réciter à nouveau.', 'Réciter à nouveau'); if (perfect) party(expected.length + ' mots récités de mémoire, sans une seule erreur.', 'Récitation sans faute'); }
@@ -706,9 +774,11 @@ function liveTick(final) {
   if (region.length < 16000 * 0.5 && !final) return;
   const segs = splitOnSilence(region, 16000); let consumed = 0;
   for (const [a, b] of segs) {
-    const quietAfter = (region.length - b) > 16000 * 0.34, long = (b - a) > 16000 * 12;
+    const quietAfter = (region.length - b) > 16000 * 0.34, long = (b - a) > 16000 * 5;
     if (final || (quietAfter && (b - a) >= 16000 * 0.9)) { submit(region.slice(a, b), mySession); consumed = b; }
-    else if (long) { const cut = a + 16000 * 11; submit(region.slice(a, cut), mySession); consumed = cut; break; }
+    else if (long) { // creux d'énergie dans la dernière seconde et demie
+      let best = b - 4800, bestE = Infinity; for (let p = b - 24000; p < b - 4800; p += 320) { let e = 0; for (let k = p; k < p + 320; k++) e += region[k] * region[k]; if (e < bestE) { bestE = e; best = p + 160; } }
+      submit(region.slice(a, best), mySession); consumed = best; break; }
     else break;
   }
   if (consumed) { cursor += consumed; return; }
@@ -801,7 +871,7 @@ function openPanel() {
   $('pMin').textContent = Math.round(h.secs / 60); $('pPerf').textContent = h.perfect; $('pEval').textContent = h.evals;
   const list = Object.entries(h.errs).sort((a, b) => b[1].n - a[1].n).slice(0, 15), box = $('pErr'); box.innerHTML = '';
   if (!list.length) box.innerHTML = '<p class="empty">Aucun mot à revoir pour l\'instant. Les mots sur lesquels vous butez apparaîtront ici, et disparaîtront quand vous les réciterez juste.</p>';
-  for (const [key, e] of list) { const [su, a] = key.split(':').map(Number), el = document.createElement('div'); el.innerHTML = '<b></b><span></span><em></em>'; el.children[0].textContent = e.w; el.children[1].textContent = QURAN[su].t + ', verset ' + (a + 1); el.children[2].textContent = e.n + ' fois'; box.appendChild(el); }
+  for (const [key, e] of list) { const [su, a] = key.split(':').map(Number), el = document.createElement('div'); el.innerHTML = '<b></b><span></span><em></em>'; el.children[0].textContent = e.w; el.children[1].textContent = QURAN[su].t + (a < 0 ? ', basmala' : ', verset ' + (a + 1)); el.children[2].textContent = e.n + ' fois'; box.appendChild(el); }
   $('panel').classList.add('on');
 }
 $('progBtn').addEventListener('click', openPanel); $('panelClose').addEventListener('click', () => $('panel').classList.remove('on'));
@@ -830,7 +900,7 @@ function party(sub, head) {
 
 // ================= Démarrage =================
 refresh();
-if (!secure) { mic.style.display = 'none'; $('micLabel').style.display = 'none'; $('fileLink').style.display = 'none'; $('alt').style.display = 'flex'; say.textContent = ''; warm(); }
+if (!secure) { mic.style.display = 'none'; $('micLabel').style.display = 'none'; $('fileLink').style.display = 'none'; $('alt').style.display = 'flex'; say.textContent = ''; }
 
 </script>
 </body>
