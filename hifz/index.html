@@ -159,6 +159,18 @@
   body.rec #eyeBtn { visibility:visible !important; }
   body.v-recite:not(.eval) .dockRow { gap:11px !important; }
   .pg.topHome { width:34px; height:34px; flex:none; visibility:visible !important; } body.rec .pg.topHome { display:none; }
+
+  /* ===== affichage comme Tarteel pendant la récitation ===== */
+  #pageBox:not(.show) .qline .w.out:not(.said) { visibility:hidden; }
+  #pageBox .w.out.said { color:var(--qink) !important; }
+  #pageBox.show .w.out { color:inherit; }
+  body.rec #pageBox .w.ok, body.rec #pageBox .w.est, body.rec #pageBox .w.pending.est { color:var(--qink) !important; background:none !important; box-shadow:none !important; }
+  body.rec #pageBox:not(.show) .w.cur { color:#00A651 !important; background:none !important; box-shadow:none !important; }
+  body.rec #pageBox:not(.show).hasEst .w.cur { color:var(--qink) !important; }
+  body.rec #pageBox:not(.show) .w.estLast { color:#00A651 !important; }
+  body.rec #pageBox.show .w.cur, body.rec #pageBox.show .w.estLast { color:var(--qink) !important; background:rgba(120,120,120,.32) !important; box-shadow:none !important; border-radius:6px; }
+  body.rec #pageBox.show.hasEst .w.cur { background:none !important; }
+  body.rec #pageBox.show .qline:has(.w.cur), body.rec #pageBox.show .qline:has(.w.estLast), body.rec #pageBox.show .qline.cl { background:rgba(120,120,120,.13) !important; border-radius:8px; }
   .dockRow { display:flex; align-items:center; gap:26px; direction:ltr; }
   .pg { width:44px; height:44px; border-radius:50%; border:0; background:var(--mint); display:flex; align-items:center; justify-content:center; } .pg svg { width:22px; height:22px; }
   body.rec .pg, body.eval .pg { visibility:hidden; }
@@ -1018,7 +1030,7 @@ function locate(E, H, lo, hi, near, cand) {
       else if (j + 1 < n && sim(E[i], H[j + 1]) >= OK) { /* mot entendu en trop */ }
       else i++;
     }
-    const score = m - 0.004 * Math.min(250, o > near + 3 ? 2 * (o - near) : Math.abs(o - near)); // à égalité, une reprise en arrière est plus probable qu'un saut en avant
+    const score = m - 0.004 * Math.min(250, o > near + 3 ? 2 * (o - near) : Math.abs(o - near)) - 0.3 * Math.max(0, (last - o + 1) - m) - 0.3 * j0; // à égalité, une reprise en arrière est plus probable qu'un saut en avant
     if (!best || score > best.score) best = { o, last, m, score, n: n - j0 };
   }
   return best;
@@ -1150,17 +1162,18 @@ const PG = [null], PAGE_OF = new Map(); // lignes de chaque page du mushaf de M�
         lines.push({ t: 'T', items }); }
     }
     PG.push(lines); } }
-let liveCur = -1, GIX = null, GREF = null, lostTexts = []; let idxOf = new Map(), pageOfIdx = [], startAt = [0, 0], curPage = 1, pageSpans = new Map(), bsmGroups = [], ayMarks = [], renderSeq = 0, pageOk = true; const fontReady = {};
-function globalIndex() { if (!GIX) { const flat = []; GREF = []; WORDS.forEach((v, s) => v.forEach((ws, a) => ws.forEach((w, wi) => { flat.push(w); GREF.push([s, a, wi]); }))); GIX = makeIndex(flat); } return GIX; }
+const said = new Set(); let liveMiss = 0; let liveCur = -1, GIX = null, GREF = null, lostTexts = []; let idxOf = new Map(), pageOfIdx = [], startAt = [0, 0], curPage = 1, pageSpans = new Map(), bsmGroups = [], ayMarks = [], renderSeq = 0, pageOk = true; const fontReady = {};
+const GK = new Map();
+function globalIndex() { if (!GIX) { const flat = []; GREF = []; WORDS.forEach((v, s) => v.forEach((ws, a) => ws.forEach((w, wi) => { GK.set(s + ':' + a + ':' + wi, flat.length); flat.push(w); GREF.push([s, a, wi]); }))); GIX = makeIndex(flat); } return GIX; }
 setTimeout(() => { try { globalIndex(); } catch (e) {} }, 2500);
 // Récitation entendue ailleurs que sur la page : on cherche dans tout le Coran et on y va
-function globalFind(text) {
+function globalFind(text, strict) {
   let hw = text.split(/\s+/).filter(w => baseNorm(w).length); const B = BASMALA.map(variants);
   let k = 0; while (k < Math.min(4, hw.length) && sim(B[k], variants(hw[k])) >= 0.75) k++; if (k >= 3) hw = hw.slice(k);
-  if (hw.length < 3) return null; const r = findGlobal(globalIndex(), hw, 0); return r ? GREF[r.o] : null;
+  if (hw.length < (strict ? 4 : 3)) return null; const ix = globalIndex(); let near = 0; try { for (let q = Math.min(matcher.pos(), wordRef.length - 1); q < wordRef.length; q++) { const g0 = GK.get(wordRef[q].join(':')); if (g0 != null) { near = g0; break; } } } catch (e) {} const r = findGlobal(ix, hw, near); if (!r || (strict && r.m < hw.length)) return null; return GREF[r.o];
 }
 function getStart() { if (unit === 'sura') { const s = +sura.value, n = QURAN[s].v.length, f = Math.min(Math.max(1, +from.value || 1), n); from.value = f; from.max = n; return [s, f - 1]; } return AY[UNITS[unit].range(+num.value)[0]]; }
-function buildSession(s0, a0, w0) {
+function buildSession(s0, a0, w0) { try { if (matcher && wordRef) matcher.st.forEach((s, i) => { if (s === 'ok' && wordRef[i]) said.add(wordRef[i].join(':')); }); } catch (e) {}
   w0 = w0 || 0; // tout ce qui suit le point de départ, sur 40 pages : la récitation continue d'une sourate à l'autre
   expected = []; wordRef = []; verseStarts = []; idxOf = new Map(); pageOfIdx = []; startAt = [s0, a0];
   const pMax = Math.min(604, PAGE_OF.get(key(s0, a0, 0)) + 40);
@@ -1208,7 +1221,7 @@ async function renderPage(p) {
       const sp = mk(idx.length ? 'w pending' : inSes ? 'w' : 'w out', ok && bsmOk ? '#"!' : BASMALA.join(' ')); d.className = 'bline' + (ok && bsmOk ? '' : ' txt'); if (ok && bsmOk) sp.style.fontFamily = 'qbsm';
       if (idx.length) { sp.dataset.i = idx[0]; bsmGroups.push({ sp, idx }); } d.appendChild(sp); box.appendChild(d); }
     else { const d = document.createElement('div'); d.className = 'qline' + (ok ? '' : ' txt'); if (ok) d.style.fontFamily = 'qp' + p;
-      for (const it of l.items) { if (it.m) { if (ok) d.appendChild(mk('ay', it.g)); continue; } const i = idxOf.get(key(it.s, it.a, it.wi)); const ws = mk(i == null ? 'w out' : 'w pending', ok ? it.g : WORDS[it.s][it.a][it.wi], i); ws.dataset.v = it.s + ':' + it.a; d.appendChild(ws); if (it.e) { const m = mk('ay', ok ? it.e : '۝' + toAr(it.a + 1)); m.dataset.v = it.s + ':' + it.a; d.appendChild(m); if (i != null) ayMarks.push([m, i]); } }
+      for (const it of l.items) { if (it.m) { if (ok) d.appendChild(mk('ay', it.g)); continue; } const i = idxOf.get(key(it.s, it.a, it.wi)); const ws = mk(i == null ? (said.has(it.s + ':' + it.a + ':' + it.wi) ? 'w out said' : 'w out') : 'w pending', ok ? it.g : WORDS[it.s][it.a][it.wi], i); ws.dataset.v = it.s + ':' + it.a; d.appendChild(ws); if (it.e) { const m = mk('ay', ok ? it.e : '۝' + toAr(it.a + 1)); m.dataset.v = it.s + ':' + it.a; d.appendChild(m); if (i != null) ayMarks.push([m, i]); } }
       box.appendChild(d); }
   }
   { const inf0 = posInfo(p); $('pgNum').textContent = toAr(p); }
@@ -1216,7 +1229,7 @@ async function renderPage(p) {
   const inf = posInfo(p), si = pageOfIdx.indexOf(p); $('passMain').textContent = suraName(si >= 0 && wordRef[si] ? wordRef[si][0] : inf.s); $('passSub').textContent = t('Page {0}, juz {1}', p, inf.juz); if (view === 'home') renderHome();
 }
 function clearRes() { try { lisStop(); } catch (e) {} $('results').classList.remove('on'); $('sheet').classList.remove('on'); document.body.classList.remove('done'); }
-function startSession() { const [s0, a0] = getStart(); buildSession(s0, a0); clearRes(); return renderPage(PAGE_OF.get(key(s0, a0, 0))); }
+function startSession() { const [s0, a0] = getStart(); buildSession(s0, a0); said.clear(); clearRes(); return renderPage(PAGE_OF.get(key(s0, a0, 0))); }
 const turn = d => { if (!busyNow() && mode === 'recite' && curPage + d >= 1 && curPage + d <= 604) renderPage(curPage + d); };
 $('pgNext').addEventListener('click', () => turn(1)); $('pgPrev').addEventListener('click', () => turn(-1));
 { let x0 = null, y0 = 0; const w = $('pageWrap'); // on tourne la page du doigt, comme un mushaf
@@ -1450,8 +1463,8 @@ function commitText(x) {
   matcher.commit(x); if (mode !== 'recite') return;
   if (!matcher.lost()) { lostTexts = []; liveCur = matcher.liveEnd(); return; }
   lostTexts.push(x); lostTexts = lostTexts.slice(-3);
-  if (matcher.st.some(s => s === 'ok') && matcher.lost() < 2) return; // un passage manqué en cours de route : on attend la phrase suivante
-  const g = globalFind(lostTexts.slice(-2).join(' ')) || globalFind(x); if (!g) return;
+  if (matcher.st.some(s => s === 'ok') && matcher.lost() < 2 && !globalFind(x, true)) return; // un passage manqué en cours de route : on attend la phrase suivante
+  const g = globalFind(x, true) || globalFind(lostTexts.slice(-2).join(' ')) || globalFind(x); if (!g) return; { const gi = idxOf.get(key(g[0], g[1], g[2])); if (gi != null && gi >= matcher.pos() - 5 && gi <= matcher.pos() + 60 && matcher.lost() < 2) return; }
   const [s, a, wi] = g, again = lostTexts.slice(); lostTexts = [];
   buildSession(s, a, wi); sura.value = s; from.value = a + 1; unit = 'sura'; syncPicker(); store.set('mcf-sel', { mode, unit, s: String(s), f: String(a + 1), n: num.value });
   again.forEach(y => matcher.commit(y)); liveCur = matcher.liveEnd(); renderPage(pageOfIdx[Math.max(0, Math.min(matcher.pos(), expected.length - 1))]);
@@ -1550,12 +1563,12 @@ function resample(inp, sr) {
   carry = buf.slice(Math.floor(n * ratio)); return out;
 }
 let lastThr = 0.008, estInfo = null, estRate = 2.2, estSp = null, estIdx = -1, estList = [];
-function markLine() { document.querySelectorAll('.qline.cl').forEach(l => l.classList.remove('cl')); const sp = estList[estList.length - 1] || null; if (sp && sp.parentElement && sp.parentElement.classList.contains('qline')) sp.parentElement.classList.add('cl'); }
-function clearEst() { document.querySelectorAll('.qline.cl').forEach(l => l.classList.remove('cl'));  estInfo = null; estIdx = -1; estList.forEach(s => s.classList.remove('est')); estList = []; estSp = null; }
+function markLine() { document.querySelectorAll('.w.estLast').forEach(e => e.classList.remove('estLast')); { const l0 = estList[estList.length - 1]; if (l0) l0.classList.add('estLast'); $('pageBox').classList.toggle('hasEst', !!l0); } document.querySelectorAll('.qline.cl').forEach(l => l.classList.remove('cl')); const sp = estList[estList.length - 1] || null; if (sp && sp.parentElement && sp.parentElement.classList.contains('qline')) sp.parentElement.classList.add('cl'); }
+function clearEst() { document.querySelectorAll('.w.estLast').forEach(e => e.classList.remove('estLast')); try { $('pageBox').classList.remove('hasEst'); } catch (e) {} document.querySelectorAll('.qline.cl').forEach(l => l.classList.remove('cl'));  estInfo = null; estIdx = -1; estList.forEach(s => s.classList.remove('est')); estList = []; estSp = null; }
 function moveEst() { // curseur d'avance : suit la voix sans attendre le moteur (il se corrige dès que le moteur répond)
-  if (!estInfo || finished) return clearEst();
+  if (!estInfo || finished) return clearEst(); if (liveMiss > 0 || (matcher.lost && matcher.lost())) return clearEst();
   let v = 0; for (let f = Math.floor(estInfo.endAbs / 320); f < frameE.length; f++) if (frameE[f] > lastThr) v++; // seulement le temps où la voix passe : une pause n'avance pas le curseur
-  const dt = v * 0.02; let k = Math.min(estInfo.to + 1 + Math.floor(estRate * dt * 0.8), estInfo.to + 10); for (let q = Math.max(0, matcher.pos()), x = 0; q <= k + x && q < expected.length; q++) if (wordRef[q][1] === -1) { x++; if (q + 1 > k + x - 1) k++; } k = Math.min(k, expected.length - 1);
+  const dt = v * 0.02; let k = Math.min(estInfo.to + 1 + Math.floor(estRate * dt * 0.8), estInfo.to + 2); for (let q = Math.max(0, matcher.pos()), x = 0; q <= k + x && q < expected.length; q++) if (wordRef[q][1] === -1) { x++; if (q + 1 > k + x - 1) k++; } k = Math.min(k, expected.length - 1);
   if (k <= liveCur && k <= matcher.pos() - 1) return; if (k === estIdx) return; estIdx = k;
   estList.forEach(s => s.classList.remove('est')); estList = []; for (let q = Math.max(0, Math.max(matcher.pos(), k - 4)); q <= k; q++) { const sp = mode === 'eval' ? spans[q] : pageSpans.get(q); if (sp && shown[q] === 'notreached') { sp.classList.add('est'); estList.push(sp); } } { const e0 = estList[estList.length - 1]; if (e0 && !finished && mode !== 'eval' && canScroll()) { const wr = $('pageWrap').getBoundingClientRect(), r = e0.getBoundingClientRect(); if (r.bottom > wr.bottom - 40) e0.scrollIntoView({ block: 'center', behavior: 'smooth' }); } } estSp = estList[estList.length - 1] || null; markLine();
 }
@@ -1588,7 +1601,7 @@ function liveTick(final) {
       partialBusy = false; if (m.ms) lagMs.push(m.ms);
       if (mySession !== session || cursor > startAbs || finished) return;
       const ws = (m.text || '').split(/\s+/).filter(Boolean), nAll = ws.length; ws.pop(); if (cut) ws.shift(); // mots coupés aux deux bouts de la fenêtre
-      const r = matcher.live(ws.join(' ')); if (!r) return;
+      const r = matcher.live(ws.join(' ')); if (!r) { if (mode === 'recite' && ws.length >= 4 && (++liveMiss >= 1 || !matcher.st.some(s => s === 'ok'))) { const g = globalFind(ws.join(' '), true); if (g) { const gi = idxOf.get(key(g[0], g[1], g[2])); if (gi == null || gi < matcher.pos() - 5 || gi > matcher.pos() + 60) { liveMiss = 0; lostTexts = []; buildSession(g[0], g[1], g[2]); sura.value = g[0]; from.value = g[1] + 1; unit = 'sura'; syncPicker(); clearEst(); liveCur = -1; previewIdx = []; renderPage(pageOfIdx[0]); } } } return; } liveMiss = 0;
       if (!(liveCur >= matcher.pos() && r.to < liveCur && liveCur - r.to <= 8)) liveCur = r.to; previewIdx = []; for (let k = matcher.pos(); k <= liveCur; k++) previewIdx.push(k); update();
       if (nAll >= 2) estRate = Math.min(3.4, Math.max(1.3, 0.6 * estRate + 0.4 * (nAll / Math.max(0.8, (b - w0) / 16000)))); estInfo = { to: r.to, endAbs: cursor + b }; moveEst();
     });
@@ -1951,7 +1964,7 @@ $('welcomeGo').addEventListener('click', () => { const cc = $('wCc').value.repla
   store.set('mcf-phone', cc + n); store.set('mcf-welcome', 1); $('welcome').classList.remove('on'); if (!store.get('mcf-tour', 0)) setTimeout(tourOpen, 150); });
 engText(); refresh(); renderHome(); setTimeout(checkDefis, 1500); if (store.get('mcf-welcome', 0) && !store.get('mcf-tour', 0)) setTimeout(tourOpen, 600);
 if (!secure) { $('alt').style.display = 'flex'; document.querySelector('.dockRow').style.display = 'none'; $('micLabel').style.display = 'none'; say.textContent = ''; }
-window.__hz = () => ({ pos: matcher ? matcher.pos() : 0, live: liveCur, est: estIdx, page: curPage, lag: lagMs.slice() }); // état du suivi, pour les tests automatiques
+window.__hz = () => ({ heard: heardAll.join(' | '), pos: matcher ? matcher.pos() : 0, live: liveCur, est: estIdx, page: curPage, lag: lagMs.slice() }); // état du suivi, pour les tests automatiques
 
 // photo de profil (gardée sur l'appareil)
 function renderPhoto() { const p = store.get('mcf-photo', ''), a = $('homeAcc'), im = $('phImg'); if (p) { a.innerHTML = '<img alt="">'; a.firstChild.src = p; im.innerHTML = '<img alt="">'; im.firstChild.src = p; $('phDel').hidden = false; } else { if (!a.querySelector('svg')) a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.500-6 8-6s6.500 2 8 6"/></svg>'; im.innerHTML = PH_ICON; $('phDel').hidden = true; } }
