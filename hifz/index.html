@@ -131,6 +131,16 @@
   #lisRates { display:flex; gap:6px; } #lisRates button { flex:1; padding:11px 0; border:0; border-radius:12px; background:var(--mint); font:inherit; font-weight:700; } #lisRates button.on { background:var(--em); color:#fff; }
   #lisPlay { margin-top:16px; width:100%; padding:15px; border:0; border-radius:16px; background:var(--em); color:#fff; font:inherit; font-weight:800; font-size:1.05rem; } #lisPlay .p2 { display:none; } #lisPlay.on .p1 { display:none; } #lisPlay.on .p2 { display:inline; }
   #lisMsg { color:#C62828; font-size:.9rem; margin-top:8px; min-height:1em; }
+
+  /* page pleine : plus de bande blanche, commandes compactes en bas au centre */
+  body.v-recite:not(.eval) .tabs { display:none; }
+  body.v-recite:not(.eval) .pageFoot { height:0; }
+  body.v-recite:not(.eval) #pageWrap::after { content:""; flex:none; height:calc(96px + env(safe-area-inset-bottom, 0px)); }
+  body.v-recite:not(.eval) .dock, body.v-recite.rec:not(.eval) .dock { bottom:calc(8px + env(safe-area-inset-bottom, 0px)); }
+  body.v-recite:not(.eval) .dockRow { gap:10px; padding:5px 10px; border-radius:99px; background:rgba(255,255,255,.86); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); box-shadow:0 4px 18px rgba(6,61,43,.2); }
+  body.v-recite:not(.eval) .pg { width:40px; height:40px; } body.v-recite:not(.eval) .pg svg { width:20px; height:20px; }
+  body.v-recite:not(.eval) .mic { width:56px; height:56px; box-shadow:0 0 0 3px #fff, 0 6px 16px rgba(1,215,88,.4); }
+  body.v-recite:not(.eval) #micLabel { display:none; }
   .dockRow { display:flex; align-items:center; gap:26px; direction:ltr; }
   .pg { width:44px; height:44px; border-radius:50%; border:0; background:var(--mint); display:flex; align-items:center; justify-content:center; } .pg svg { width:22px; height:22px; }
   body.rec .pg, body.eval .pg { visibility:hidden; }
@@ -630,6 +640,7 @@
 <div class="dock">
   <div class="say" id="say"></div>
   <div class="dockRow">
+    <button class="pg" id="homeBtn" aria-label="Accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg></button>
     <button class="pg" id="pgNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button class="mic load" id="mic">
       <svg class="ic-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.500" width="6" height="12" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.500"/></svg>
@@ -1455,13 +1466,13 @@ function paint(final) {
   if (liveCur >= 0 && pageSpans.has(liveCur)) cur = liveCur;
   for (const [m, i] of ayMarks) m.classList.toggle('hid', !finished && shown[i] === 'notreached');
   for (const g of bsmGroups) { const ss = g.idx.map(i => shown[i]), bad = g.idx.find(i => ['wrong', 'missed', 'doubt', 'vowel'].includes(shown[i]));
-    const st = !ss.some(s => s === 'ok') ? 'pending' : ss.every(s => s === 'missed' || s === 'notreached') ? 'pending' : ss.some(s => s === 'wrong' || s === 'missed') ? (ss.every(s => s === 'missed') ? 'missed' : 'wrong') : ss.some(s => s === 'doubt' || s === 'vowel') ? 'doubt' : ss.every(s => s === 'ok') ? 'ok' : finished ? 'notreached' : 'pending';
+    const st = ss.filter(s => s === 'ok').length < 3 ? 'pending' : ss.every(s => s === 'missed' || s === 'notreached') ? 'pending' : ss.some(s => s === 'wrong' || s === 'missed') ? (ss.every(s => s === 'missed') ? 'missed' : 'wrong') : ss.some(s => s === 'doubt' || s === 'vowel') ? 'doubt' : ss.every(s => s === 'ok') ? 'ok' : finished ? 'notreached' : 'pending';
     g.sp.dataset.i = bad != null ? bad : g.idx[0]; set(g.sp, st); }
   if (!finished && cur >= 0) { const sp = pageSpans.get(cur); sp.classList.add('cur'); const wr = $('pageWrap').getBoundingClientRect(), r = sp.getBoundingClientRect(); if (r.bottom > wr.bottom - 40 || r.top < wr.top + 20) sp.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
 }
 const reached = () => mode === 'recite' ? matcher.pos() : matcher.st.length;
-function bsmRead(su) { const st = matcher.st; for (let i = 0; i < st.length; i++) if (st[i] === 'ok' && wordRef[i][1] === -1 && wordRef[i][0] === su) return true; return false; }
-function tally() { const c = { ok: 0, doubt: 0, bad: 0, nr: 0, sk: 0 }, n = reached(), BR = new Set(); for (let i = 0; i < n; i++) if (wordRef[i][1] === -1 && matcher.st[i] === 'ok') BR.add(wordRef[i][0]); for (let i = 0; i < n; i++) { const s = matcher.st[i]; if (wordRef[i][1] === -1 && !BR.has(wordRef[i][0])) { c.sk++; continue; } if (s === 'ok') c.ok++; else if (s === 'doubt' || s === 'vowel') c.doubt++; else if (s === 'notreached') c.nr++; else c.bad++; } return c; }
+function bsmRead(su) { const st = matcher.st; let n = 0; for (let i = 0; i < st.length; i++) if (st[i] === 'ok' && wordRef[i][1] === -1 && wordRef[i][0] === su) n++; return n >= 3; }
+function tally() { const c = { ok: 0, doubt: 0, bad: 0, nr: 0, sk: 0 }, n = reached(), BR = new Set(); for (let i = 0; i < n; i++) if (wordRef[i][1] === -1 && matcher.st[i] === 'ok') { const su = wordRef[i][0], c0 = (BR.cnt = BR.cnt || {}); c0[su] = (c0[su] || 0) + 1; if (c0[su] >= 3) BR.add(su); } for (let i = 0; i < n; i++) { const s = matcher.st[i]; if (wordRef[i][1] === -1 && !BR.has(wordRef[i][0])) { c.sk++; continue; } if (s === 'ok') c.ok++; else if (s === 'doubt' || s === 'vowel') c.doubt++; else if (s === 'notreached') c.nr++; else c.bad++; } return c; }
 function chips() {
   const c = tally(), n = c.ok + c.doubt + c.bad; $('cBad').textContent = c.bad; $('cBadBox').classList.toggle('bad', c.bad > 0); $('cBadL').textContent = c.bad > 1 ? t('fautes') : t('faute'); $('cPct').textContent = n ? Math.round(100 * c.ok / n) : 100;
   if (recording && c.bad > lastBad && opts.hap && navigator.vibrate) try { navigator.vibrate(35); } catch (e) {}
@@ -1519,14 +1530,14 @@ function clearEst() { document.querySelectorAll('.qline.cl').forEach(l => l.clas
 function moveEst() { // curseur d'avance : suit la voix sans attendre le moteur (il se corrige dès que le moteur répond)
   if (!estInfo || finished) return clearEst();
   let v = 0; for (let f = Math.floor(estInfo.endAbs / 320); f < frameE.length; f++) if (frameE[f] > lastThr) v++; // seulement le temps où la voix passe : une pause n'avance pas le curseur
-  const dt = v * 0.02, k = Math.min(estInfo.to + 1 + Math.floor(estRate * dt * 0.45), estInfo.to + 3, expected.length - 1);
+  const dt = v * 0.02, k = Math.min(estInfo.to + 1 + Math.floor(estRate * dt * 0.7), estInfo.to + 5, expected.length - 1);
   if (k <= liveCur && k <= matcher.pos() - 1) return; if (k === estIdx) return; estIdx = k;
   estList.forEach(s => s.classList.remove('est')); estList = []; for (let q = Math.max(0, Math.max(matcher.pos(), k - 4)); q <= k; q++) { const sp = mode === 'eval' ? spans[q] : pageSpans.get(q); if (sp && shown[q] === 'notreached') { sp.classList.add('est'); estList.push(sp); } } { const e0 = estList[estList.length - 1]; if (e0 && !finished && mode !== 'eval') { const wr = $('pageWrap').getBoundingClientRect(), r = e0.getBoundingClientRect(); if (r.bottom > wr.bottom - 40) e0.scrollIntoView({ block: 'center', behavior: 'smooth' }); } } estSp = estList[estList.length - 1] || null; markLine();
 }
 function liveTick(final) {
   if (!final && recording) moveEst();
   const mySession = session, region = pcm.subarray(cursor, len);
-  if (region.length < 16000 * 0.5 && !final) return;
+  if (region.length < 16000 * 0.3 && !final) return;
   // seuil de silence calculé sur toute la récitation (et non sur la phrase en cours) : une voyelle tenue n'est plus prise pour une pause
   for (; frameAt + 320 <= len; frameAt += 320) { let e = 0; for (let k = frameAt; k < frameAt + 320; k++) e += pcm[k] * pcm[k]; frameE.push(Math.sqrt(e / 320)); }
   let thr = 0; if (frameE.length >= 100) { const so = frameE.slice(-3000).sort((x, y) => x - y); thr = Math.max(so[Math.floor(so.length * 0.1)] * 2.5, so[Math.floor(so.length * 0.95)] * 0.08, 0.006); }
@@ -1543,10 +1554,11 @@ function liveTick(final) {
   }
   if (consumed) { cursor += consumed; return; }
   if (!segs.length) { if (region.length > 16000 * 4) cursor = len - 16000; return; }
+  if (!final && recording && !estInfo && (segs[0][1] - segs[0][0]) >= 16000 * 0.25) { estInfo = { to: matcher.pos() - 1, endAbs: cursor + segs[0][0] }; moveEst(); }
   // phrase en cours : dès que le moteur est libre, il écoute ce qui a déjà été dit
   const [a, b] = segs[0];
-  if (!final && engineReady && pendingJobs === 0 && !partialBusy && (b - a) >= 16000 * 0.6 && (b - a) - lastPartialLen >= 16000 * 0.25) {
-    partialBusy = true; lastPartialLen = b - a; const startAbs = cursor + a, w0 = Math.max(a, b - Math.round(16000 * 3.2)), cut = w0 > a;
+  if (!final && engineReady && pendingJobs === 0 && !partialBusy && (b - a) >= 16000 * 0.4 && (b - a) - lastPartialLen >= 16000 * 0.12) {
+    partialBusy = true; lastPartialLen = b - a; const startAbs = cursor + a, w0 = Math.max(a, b - Math.round(16000 * 2.4)), cut = w0 > a;
     transcribe(region.slice(w0, b)).then(m => {
       partialBusy = false; if (m.ms) lagMs.push(m.ms);
       if (mySession !== session || cursor > startAbs || finished) return;
@@ -1983,6 +1995,8 @@ function lisToggle() {
   $('lisClose').addEventListener('click', () => $('lisSheet').classList.remove('on'));
   $('lisSheet').addEventListener('click', e => { if (e.target === $('lisSheet')) $('lisSheet').classList.remove('on'); });
   $('mic').addEventListener('click', () => lisStop(), true); $('pgNext').addEventListener('click', () => lisStop(), true); $('pgPrev').addEventListener('click', () => lisStop(), true); lisUI(); }
+
+$('homeBtn').addEventListener('click', () => { if (!busyNow()) show('home'); });
 
 </script>
 </body>
