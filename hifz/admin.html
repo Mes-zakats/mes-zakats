@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Hifz Facile — Tableau de bord</title>
+<style>
+  :root { --ink:#0B2A1E; --ink2:#5B6B63; --em:#00C453; --deep:#063D2B; --line:#E3EEE8; --bg:#F5FAF7; --red:#D93B3B; --gold:#FFB400; }
+  * { box-sizing:border-box; } body { margin:0; font:15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--deep); color:#fff; padding:18px 18px 22px; } header h1 { margin:0; font-size:1.25rem; } header small { opacity:.8; }
+  main { max-width:960px; margin:0 auto; padding:14px; } h2 { font-size:1.02rem; margin:22px 4px 10px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; }
+  .k { background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 14px; } .k b { display:block; font-size:1.6rem; line-height:1.15; } .k span { color:var(--ink2); font-size:.85rem; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 14px; } table { width:100%; border-collapse:collapse; font-size:.88rem; } td, th { text-align:start; padding:7px 6px; border-bottom:1px solid var(--line); vertical-align:top; } th { color:var(--ink2); font-weight:600; }
+  .tag { display:inline-block; padding:1px 8px; border-radius:99px; font-size:.75rem; font-weight:700; background:#E9FBF0; color:#05603A; } .tag.r { background:#FDECEC; color:var(--red); } .tag.g { background:#FFF4CC; color:#7A5A00; }
+  .chart svg { width:100%; height:150px; display:block; } .chart .lbl { display:flex; justify-content:space-between; color:var(--ink2); font-size:.75rem; }
+  .login { max-width:360px; margin:40px auto; } input, button { font:inherit; } input { width:100%; padding:12px; border:1.5px solid #CFE3D8; border-radius:12px; margin:6px 0; } button { width:100%; padding:12px; border:0; border-radius:12px; background:var(--em); color:#04331F; font-weight:800; cursor:pointer; }
+  #err { color:var(--red); min-height:1.2em; } .muted { color:var(--ink2); } .two { display:grid; grid-template-columns:1fr; gap:10px; } @media (min-width:760px) { .two { grid-template-columns:1fr 1fr; } }
+  .stars { color:var(--gold); letter-spacing:1px; } .tip { cursor:default; }
+</style></head><body>
+<header><h1>Hifz Facile — Tableau de bord</h1><small id="sub">Réservé à l'administrateur</small></header>
+<main>
+  <div class="login card" id="login">
+    <b>Connexion administrateur</b><p class="muted">Connectez-vous avec le compte Google administrateur.</p><div id="gBtn" style="display:flex;justify-content:center;min-height:44px;margin:8px 0"></div><details><summary class="muted">Recevoir un code par e-mail</summary>
+    <input id="em" type="email" placeholder="votre@email.com" autocomplete="email"><button id="send">Recevoir le code</button>
+    <div id="step2" hidden><input id="code" inputmode="numeric" maxlength="6" placeholder="Code à 6 chiffres"><button id="ok">Ouvrir le tableau de bord</button></div></details><p id="err"></p>
+  </div>
+  <div id="dash" hidden></div>
+</main>
+<script>
+const API = 'https://hifz-api.axzertyuiop.workers.dev', GID = '784140091734-4p3qf7tsmqsfms0pf5nk871ps6ln8752.apps.googleusercontent.com', $ = id => document.getElementById(id), S = () => localStorage.getItem('adm-sess') || localStorage.getItem('mcf-sess') || '';
+function gInit() { if (!GID) return; const sc = document.createElement('script'); sc.src = 'https://accounts.google.com/gsi/client'; sc.async = true; sc.onload = () => { google.accounts.id.initialize({ client_id: GID, callback: async g => { const r = await call('/auth/google', { credential: g.credential, device: 'admin' }); if (!r.ok) return $('err').textContent = 'Connexion Google refusée.'; localStorage.setItem('adm-sess', r.session); load(); } }); google.accounts.id.renderButton($('gBtn'), { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', locale: 'fr' }); }; document.head.appendChild(sc); }
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const d = t => t ? new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—', dt = t => t ? new Date(t).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+async function call(p, b) { const h = { 'content-type': 'application/json' }; if (S()) h.authorization = 'Bearer ' + S(); const r = await fetch(API + p, { method: 'POST', headers: h, body: JSON.stringify(b || {}) }); return r.json(); }
+let mail = '';
+$('send').onclick = async () => { mail = $('em').value.trim().toLowerCase(); $('err').textContent = ''; const r = await call('/auth/code/send', { email: mail }); if (r.ok || r.error === 'wait') { $('step2').hidden = false; $('code').focus(); } else $('err').textContent = 'Envoi impossible (' + r.error + ').'; };
+$('ok').onclick = async () => { const r = await call('/auth/code/verify', { email: mail, code: $('code').value }); if (!r.ok) return $('err').textContent = 'Code refusé.'; localStorage.setItem('adm-sess', r.session); load(); };
+function kpi(v, l, tip) { return '<div class="k tip" title="' + esc(tip || '') + '"><b>' + esc(v) + '</b><span>' + esc(l) + '</span></div>'; }
+function bars(rows, key, label) { if (!rows.length) return '<p class="muted">Pas encore de données.</p>'; const W = 600, H = 130, mx = Math.max(1, ...rows.map(r => r[key] || 0)), bw = W / rows.length;
+  const g = rows.map((r, i) => { const h = Math.round((r[key] || 0) / mx * (H - 16)); return '<rect x="' + (i * bw + 2).toFixed(1) + '" y="' + (H - h) + '" width="' + Math.max(2, bw - 4).toFixed(1) + '" height="' + h + '" rx="3" fill="#00C453"><title>' + esc(r.day) + ' : ' + (r[key] || 0) + ' ' + label + '</title></rect>'; }).join('');
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' + g + '</svg><div class="lbl"><span>' + esc(rows[0].day) + '</span><span>max ' + mx + ' ' + label + '</span><span>' + esc(rows.at(-1).day) + '</span></div>'; }
+function table(head, rows) { return rows.length ? '<table><tr>' + head.map(h => '<th>' + h + '</th>').join('') + '</tr>' + rows.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</table>' : '<p class="muted">Rien pour le moment.</p>'; }
+async function load() { const r = await call('/admin/stats'); if (!r.ok) { localStorage.removeItem('adm-sess'); gInit(); $('login').hidden = false; $('dash').hidden = true; $('err').textContent = r.error === 'forbidden' ? 'Cette adresse n\'est pas administrateur.' : ''; return; }
+  $('login').hidden = true; $('dash').hidden = false; $('sub').textContent = 'Mis à jour le ' + dt(r.at);
+  const u = r.users, p = r.paid, f = r.funnel, z = r.zakat, pct = (a, b) => b ? Math.round(100 * a / b) + ' %' : '—';
+  $('dash').innerHTML =
+    '<h2>Utilisateurs</h2><div class="grid">' + kpi(u.total, 'inscrits au total') + kpi(u.new7, 'nouveaux en 7 jours') + kpi(u.active1, 'actifs aujourd\'hui') + kpi(u.active7, 'actifs sur 7 jours') + kpi(u.regulars, 'réguliers (3 jours ou plus sur 7)') + kpi(u.inactive, 'inactifs depuis 7 jours') + '</div>' +
+    '<h2>Abonnements</h2><div class="grid">' + kpi(p.active, 'Premium payants actifs') + kpi(p.trials, 'en essai gratuit') + kpi(p.new7, 'nouveaux abonnés en 7 jours') + kpi(p.new30, 'nouveaux abonnés en 30 jours', p.q30 + ' pass 3 mois, ' + p.y30 + ' pass 1 an') + kpi(p.expired30, 'pass expirés sans renouvellement (30 j)') + kpi(p.trialEnded30NoBuy, 'essais terminés sans achat (30 j)') + kpi(p.refunds30, 'remboursements (30 j)') + '</div>' +
+    '<h2>Du premier écran Premium à l\'achat (30 jours)</h2><div class="grid">' + kpi(f.paywall, 'ont vu l\'offre Premium') + kpi(f.checkout, 'ont commencé à payer', pct(f.checkout, f.paywall) + ' de ceux qui ont vu l\'offre') + kpi(f.purchase, 'ont payé', pct(f.purchase, f.checkout) + ' de ceux qui ont commencé') + '</div>' +
+    '<h2>Usage</h2><div class="grid">' + kpi(r.usage.recitations7, 'récitations en 7 jours') + kpi(r.usage.tests7, 'tests en 7 jours') + kpi(r.usage.listens7, 'écoutes en 7 jours') + kpi(r.asrMinutesToday + ' min', 'reconnaissance serveur aujourd\'hui', 'Gratuit jusqu\'à environ 200 minutes par jour') + '</div>' +
+    '<div class="two" style="margin-top:10px"><div class="card chart"><b>Utilisateurs actifs par jour</b>' + bars(r.usage.daily, 'users', 'utilisateurs') + '</div><div class="card chart"><b>Récitations par jour</b>' + bars(r.usage.daily, 'recitations', 'récitations') + '</div></div>' +
+    '<h2>Pourquoi ils partent</h2><div class="two"><div class="card"><b>Raisons données (90 jours)</b>' + table(['Raison', 'Nombre'], r.churn.reasons.map(x => [esc(x.text), x.n])) + '</div>' +
+    '<div class="card"><b>Pass expirés récemment</b>' + table(['E-mail', 'Pass', 'Fin'], r.churn.lastExpired.map(x => [esc(x.name ? x.name + ' — ' : '') + esc(x.email), x.plan === 'y' ? '1 an' : '3 mois', d(x.pass_until)])) + '</div></div>' +
+    '<div class="card" style="margin-top:10px"><b>Ne sont plus revenus depuis 7 jours</b>' + table(['E-mail', 'Dernière visite', ''], r.churn.goneQuiet.map(x => [esc(x.name ? x.name + ' — ' : '') + esc(x.email), d(x.last_seen), x.premium ? '<span class="tag">Premium</span>' : ''])) + '</div>' +
+    '<h2>Avis et messages</h2><div class="card">' + table(['Date', 'App', 'Type', 'Message', 'De'], r.recent.feedback.map(x => [dt(x.at), x.app === 'zakat' ? 'Mes Zakats' : 'Hifz', x.kind === 'churn' ? '<span class="tag r">départ</span>' : x.kind === 'rate' ? '<span class="stars">' + '★'.repeat(x.rating) + '</span>' : '<span class="tag g">' + esc(x.kind) + '</span>', esc(x.text), esc(x.email || 'anonyme')])) + '</div>' +
+    '<h2>Derniers inscrits et dernières ventes</h2><div class="two"><div class="card">' + table(['Date', 'E-mail', 'Via', ''], r.recent.users.map(x => [d(x.created), esc(x.email), esc({ google: 'Google', code: 'code e-mail', shop: 'boutique' }[x.via] || x.via), x.premium ? '<span class="tag">Premium</span>' : ''])) + '</div>' +
+    '<div class="card">' + table(['Date', 'E-mail', 'Pass', ''], r.recent.sales.map(x => [d(x.at), esc(x.email), x.plan === 'y' ? '1 an' : '3 mois', x.refunded ? '<span class="tag r">remboursé</span>' : ''])) + '</div></div>' +
+    '<h2>Mes Zakats</h2><div class="grid">' + kpi(z.registered, 'inscrits suivis depuis l\'ajout du suivi') + kpi(z.devices7, 'appareils actifs en 7 jours') + kpi(z.devices30, 'appareils actifs en 30 jours') + kpi(z.calculations30, 'sessions de calcul en 30 jours') + kpi(z.returning7, 'revenus 2 jours ou plus sur 7') + '</div>' +
+    '<div class="card" style="margin-top:10px">' + table(['Inscrit', 'Dernière visite', 'Calculs'], z.recent.map(x => { let reg = null; try { reg = JSON.parse(x.reg || 'null'); } catch (e) {} return [reg ? esc(reg.name) + ' (…' + esc(reg.tel) + ')' : '<span class="muted">non inscrit</span>', dt(x.last), x.calcs]; })) + '</div>';
+}
+if (S()) load(); else gInit();
+</script></body></html>

@@ -187,6 +187,7 @@
   #pwOk { display:none; margin-top:18px; width:100%; padding:14px; border:0; border-radius:14px; background:var(--em); font:inherit; font-weight:800; } .payWait.done #pwOk, .payWait.fail #pwOk { display:block; } .payWait.fail .pwSpin { animation:none; }
 
   .gBtn { display:flex; justify-content:center; min-height:44px; margin:6px 0 2px; } .gBtn:empty { display:none; } .gBtn:empty + .orL { display:none; }
+  #wStep1.gOnly .lab, #wStep1.gOnly #wEmail, #wStep1.gOnly #wSend { display:none; } #orL[hidden] { display:none; }
   .orL { display:flex; align-items:center; gap:10px; color:var(--ink2); font-size:.85rem; margin:10px 0; } .orL::before, .orL::after { content:""; flex:1; height:1px; background:#DCE9E2; }
   #wEmail, #wCode { width:100%; padding:13px 14px; border-radius:14px; border:1.5px solid #CFE3D8; font:inherit; font-size:1.05rem; background:#fff; } #wCode { letter-spacing:.35em; text-align:center; font-weight:800; }
   .welcome #wSend, .welcome #wVerify { width:100%; margin-top:12px; background:#FFCC00; color:#063D2B; border:0; border-radius:16px; padding:15px; font:inherit; font-weight:800; font-size:1.05rem; box-shadow:0 5px 0 #E0B200; } .welcome #wSend:disabled, .welcome #wVerify:disabled { opacity:.6; } .wLink { background:none; border:0; color:var(--deep); text-decoration:underline; font:inherit; font-size:.88rem; margin-top:8px; width:100%; }
@@ -1885,8 +1886,8 @@ $('dOk').addEventListener('click', () => {
 
 // ================= Compte, pass et livres =================
 if (typeof window !== 'undefined') window.__noapi = 0;
-const LINKS = { shop: 'https://dkyeqnec.mychariow.shop/memorisation-du-coran', q: 'https://dkyeqnec.mychariow.shop/prd_nroescq2/checkout', y: 'https://dkyeqnec.mychariow.shop/prd_ajvf9s4i/checkout', api: '', gid: '', wa: '22965435681' }; // liens Chariow : boutique des livres, pass 3 mois, pass 1 an
-if (!LINKS.api) { LINKS.q = ''; LINKS.y = ''; } // paiement ouvert seulement quand le serveur vérifie les achats
+const LINKS = { shop: 'https://dkyeqnec.mychariow.shop/memorisation-du-coran', q: 'https://dkyeqnec.mychariow.shop/prd_nroescq2/checkout', y: 'https://dkyeqnec.mychariow.shop/prd_ajvf9s4i/checkout', api: 'https://hifz-api.axzertyuiop.workers.dev', gid: '784140091734-4p3qf7tsmqsfms0pf5nk871ps6ln8752.apps.googleusercontent.com', wa: '22965435681' }; // liens Chariow : boutique des livres, pass 3 mois, pass 1 an
+var PAY_Q = LINKS.q, PAY_Y = LINKS.y; LINKS.q = ''; LINKS.y = ''; if (LINKS.api) fetch(LINKS.api + '/').then(r => r.json()).then(j => { if (j && j.ready) { LINKS.q = PAY_Q; LINKS.y = PAY_Y; } }).catch(() => {}); // paiement ouvert seulement quand le serveur vérifie les achats
 if (!store.get('mcf-since', 0)) store.set('mcf-since', Date.now());
 function renderAccount() { planCard(); $('accSince').textContent = new Date(store.get('mcf-since', Date.now())).toLocaleDateString(LOCALE[opts.lang], { day: 'numeric', month: 'long', year: 'numeric' }); }
 const openPass = () => { $('lockSheet').classList.remove('on'); $('passMsg').textContent = ''; $('passSheet').classList.add('on'); };
@@ -2153,7 +2154,7 @@ function srStop() { srOn = false; try { sr && sr.stop(); } catch (e) {} }
 window.__sr = { srFinal, srInterim };
 
 /* ---------- Compte (e-mail), Premium, quotas tenus par le serveur, avis, statistiques d'usage ---------- */
-var PASS_PUB = null;
+var PASS_PUB = {"kty":"EC","crv":"P-256","x":"Dp2k4IQ00Xp68Q6TpBljIxqxJTpViVkydQDhMZwA4Q4","y":"fjuPI2p2rOams6T9n293kj0AxXb7YVIRBnKfzwgGznA"};
 function freeq(k) { return { mem: 3, test: 1, dare: 1 }[k]; }
 function devId() { let d = localStorage.getItem('mcf-dev'); if (!d) { d = 'dev-' + Array.from(crypto.getRandomValues(new Uint8Array(12)), x => x.toString(16).padStart(2, '0')).join(''); localStorage.setItem('mcf-dev', d); } return d; }
 function sess() { return localStorage.getItem('mcf-sess') || ''; }
@@ -2181,7 +2182,7 @@ async function meRefresh() { if (!LINKS.api || !sess()) { await passCheckToken()
 // ----- connexion -----
 function needLogin() { if (!LINKS.api || sess()) return Promise.resolve(true); loginOpen(); return new Promise(res => loginWait.push(res)); }
 var gisLoaded = false;
-function loginOpen() { $('welcome').classList.add('on'); $('wStep1').hidden = false; $('wStep2').hidden = true; $('wErr').textContent = ''; track('login_view');
+function loginOpen() { if (true) { $('orL').hidden = true; $('wStep1').classList.add('gOnly'); } $('welcome').classList.add('on'); $('wStep1').hidden = false; $('wStep2').hidden = true; $('wErr').textContent = ''; track('login_view');
   if (!LINKS.gid || gisLoaded) return; gisLoaded = true; const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
   s.onload = () => { try { google.accounts.id.initialize({ client_id: LINKS.gid, callback: r => loginWith('/auth/google', { credential: r.credential }), ux_mode: 'popup', auto_select: false });
     google.accounts.id.renderButton($('gBtn'), { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', locale: opts.lang || 'fr', width: Math.min(320, $('wStep1').clientWidth || 300) }); } catch (e) {} };

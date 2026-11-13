@@ -1,6 +1,6 @@
 // Mes Zakats — mesure d'usage anonyme (ouvertures, inscription, calculs) vers le tableau de bord de Hifz Facile
 (function () {
-  var API = '/*STATS_API*/'; if (!API) return;
+  var API = 'https://hifz-api.axzertyuiop.workers.dev'; if (!API) return;
   var dev = localStorage.getItem('zk-dev'); if (!dev) { dev = 'zk-' + Math.random().toString(36).slice(2) + Date.now().toString(36); try { localStorage.setItem('zk-dev', dev); } catch (e) {} }
   var q = []; function track(t, d) { q.push({ t: t, at: Date.now(), d: d || {} }); }
   function flush(beacon) { if (!q.length) return; var body = JSON.stringify({ app: 'zakat', device: dev, events: q.splice(0, 50) });
