@@ -16,6 +16,7 @@ const WELL_PRICES = ['1 150 $', '1 300 $', '3 500 $', '4 000 $'];
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const num = v => { const n = parseFloat(String(v ?? '').replace(/[\s  ]/g, '').replace(',', '.')); return isFinite(n) && n > 0 ? n : 0 };
+const YT_HQM = 'https://www.youtube.com/@hifzquranmutun?sub_confirmation=1', HIFZ_URL = 'https://mes-zakats.github.io/mes-zakats/hifz/';
 const wa = txt => 'https://wa.me/' + WA + '?text=' + encodeURIComponent(txt);
 const ic = n => `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#${n}"/></svg>`;
 const store = (k, v) => { try { localStorage.setItem(k, v) } catch (e) {} };
@@ -244,7 +245,9 @@ const big = (l, v) => `<div class="big"><span>${l}</span><b>${v}</b></div>`;
 const det = inner => `<details><summary>${t('detail')}</summary>${inner}</details>`;
 
 /* ---------- Suggestions HQM : au bon moment, masquables ---------- */
-const fn = () => (user() || {}).fn || P().name;
+const fn = () => (user() || {}).fn || (P().name && P().name !== 'Moi' ? P().name : '');
+const nm = s => String(s).replace(/^\s*[,،]\s*/, '').replace(/^./, c => c.toUpperCase());
+const mName = () => fn() ? '\n' + t('m_name', { fn: fn() }) : '';
 const ndOff = k => S.tips === '0' || (S.nd[k] && Date.now() - S.nd[k] < 7 * 864e5);
 function nudge(k, title, body, btn, link) {
   if (ndOff(k)) return '';
@@ -252,22 +255,27 @@ function nudge(k, title, body, btn, link) {
     <h4>${title}</h4><p>${body}</p><a class="cta" target="_blank" rel="noopener" href="${link}">${ic('p-wa')}${btn}</a>
     <label class="never"><input type="checkbox" id="nd-${k}" data-never>${t('nd_never')}</label></section>`;
 }
-const msgZakat = x => t('m_zakat') + (x ? '\n' + t('m_amount', { x }) : '') + '\n' + t('m_name', { fn: fn() });
-const ndDue = R => nudge('due', t('nd_due_t', { fn: esc(fn()), x: money(R.rest || R.total) }), t('nd_due') + (rate() && R.base / rate() >= 20000 ? ' ' + t('nd_due_big') : ''), t('hq_give'), wa(msgZakat(money(R.rest || R.total))));
-const ndUnder = () => nudge('under', t('nd_under_t'), t('nd_under'), t('nd_under_b'), wa(t('m_sadaqa') + '\n' + t('m_name', { fn: fn() })));
-const ndFitr = R => nudge('fitr', t('nd_fitr_t', { x: R.fp ? money(R.fVal) : qty(R.fKg, 'kg'), n: R.fN }), t('nd_fitr'), t('nd_write'), wa(t('m_fitr', { n: R.fN }) + '\n' + t('m_name', { fn: fn() })));
+const msgZakat = x => t('m_zakat') + (x ? '\n' + t('m_amount', { x }) : '') + mName();
+const ndDue = R => nudge('due', nm(t('nd_due_t', { fn: esc(fn()), x: money(R.rest || R.total) })), t('nd_due') + (rate() && R.base / rate() >= 20000 ? ' ' + t('nd_due_big') : ''), t('hq_give'), wa(msgZakat(money(R.rest || R.total))));
+const ndUnder = () => nudge('under', t('nd_under_t'), t('nd_under'), t('nd_under_b'), wa(t('m_sadaqa') + mName()));
+const ndFitr = R => nudge('fitr', t('nd_fitr_t', { x: R.fp ? money(R.fVal) : qty(R.fKg, 'kg'), n: R.fN }), t('nd_fitr'), t('nd_write'), wa(t('m_fitr', { n: R.fN }) + mName()));
+const remindBox = () => `<section class="card remind"><h4>${t('rem_t')}</h4><p class="note">${t('rem_p')}</p><button class="btn" data-act="remind">${ic('p-cal')}${t('rem_b')}</button></section>`;
+const followBox = () => `<section class="card follow"><h4>${t('fl_t')}</h4><p>${t('fl_p')}</p>
+  <a class="cta" target="_blank" rel="noopener" data-act="follow" href="${YT_HQM}">${t('fl_yt')}</a>
+  <a class="btn" target="_blank" rel="noopener" data-act="follow" href="${wa(t('m_follow'))}">${ic('p-wa')}${t('fl_wa')}</a></section>`;
+const appsBox = () => `<section class="card apps"><h4>${t('apps_t')}</h4><a class="appl" href="${HIFZ_URL}" target="_blank" rel="noopener"><img src="img/hifz.png" alt="" width="44" height="44"><div><b>Hifz Facile</b><small>${t('apps_hifz')}</small></div></a></section>`;
 function ndHome(R) {
   const h = hawl();
   if (h && h.days <= 30 && R.total > 0 && !ndOff('hawl')) return nudge('hawl', h.days ? t('nd_hawl_t', { n: h.days }) : t('nd_hawl0_t'), t('nd_hawl'), t('hq_give'), wa(msgZakat(money(R.rest || R.total))));
   if (R.rest > 0) return ndDue(R);
-  if (R.base > 0 && !R.malOn && R.total === 0) return ndUnder();
+  if (R.base > 0 && !R.malOn && R.total === 0) return followBox();
   return nudge('gen', t('hq_give_t'), t('hq_st2') + ' ' + t('hq_st3'), t('hq_give'), wa(msgZakat('')));
 }
 function modal(R) {
   const seen = (S.nd.snaps || []).filter(x => Date.now() - x < 7 * 864e5);
   if (S.tips === '0' || seen.length >= 2 || !(R.rest > 0)) return;
   S.nd.snaps = seen.concat(Date.now()); save();
-  $('#modal').innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt">${t('nd_snap_t')}</h2><p>${t('nd_snap', { fn: esc(fn()), x: money(R.rest) })}</p>
+  $('#modal').innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt">${t('nd_snap_t')}</h2><p>${nm(t('nd_snap', { fn: esc(fn()), x: money(R.rest) }))}</p>
     <a class="cta" target="_blank" rel="noopener" data-act="mclose" href="${wa(msgZakat(money(R.rest)))}">${ic('p-wa')}${t('nd_write')}</a>
     <button class="btn" data-act="mclose">${t('nd_later')}</button><label class="never"><input type="checkbox" id="nd-snap" data-never>${t('nd_never')}</label></div>`;
   $('#modal').hidden = false;
@@ -280,7 +288,7 @@ const LIVE = {
       [t('row_gold', { g: qty(R.goldG, 'g') }), money(R.gold)], [t('row_silver', { g: qty(R.silverG, 'g') }), money(R.silver)], [t('row_debt'), '− ' + money(R.debt), 1], [t('row_base'), money(R.base)]])}</dl>` +
     big(t('to_pay'), money(R.mal)) +
     det(`<p dir="ltr">${R.malOn ? `${money(R.base)} × ${pct(R.rt)} = <b>${money(R.mal)}</b>` : ''}</p>${R.malOn ? '' : `<p>${t('detail_under', { b: money(R.base), n: money(R.nisab) })}</p>`}<p class="note">${t(S.ref === 'gold' ? 'detail_gold' : 'detail_silver')}</p>`)) +
-    (R.malOn ? ndDue(R) : R.base > 0 && R.nisab ? ndUnder() : ''),
+    (R.malOn ? ndDue(R) + remindBox() : R.base > 0 && R.nisab ? followBox() : ''),
   crop: R => box(R.cropOn, R.cropOn ? t('r_due') : R.kg ? t('r_nodue') : t('none_crop'),
     meter(R.kg, R.cn, t('harvest_x', { x: qty(R.kg, 'kg') }), t('nisab_x', { x: qty(R.cn, 'kg') })) + `<dl class="rows">${rows([[t('rate'), pct(R.cr)]].concat(R.cp ? [[t('value'), money(R.cropVal)]] : []))}</dl>` +
     big(t('to_give'), qty(R.cropKg, 'kg')) + det(R.cropOn ? `<p dir="ltr">${qty(R.kg, 'kg')} × ${pct(R.cr)} = <b>${qty(R.cropKg, 'kg')}</b></p>` : `<p>${t('crop_under')}</p>`)),
@@ -372,8 +380,9 @@ const V = {
         <a class="cta" target="_blank" rel="noopener" href="${wa(msgZakat(R.rest > 0 ? money(R.rest) : ''))}">${ic('p-wa')}${t('hq_give')}</a></section>
       <h2>${t('hq_well_t')}</h2><p class="note">${t('hq_well_n')}</p>
       ${[1, 2, 3, 4].map(i => `<article class="well"><img src="img/puits${i}.jpg" alt="${t('w' + i)}" width="520" height="325"><div><b>${t('w' + i)}<span dir="ltr">${WELL_PRICES[i - 1]} US</span></b><p class="note">${t('w' + i + 'd')}</p>
-        <a class="btn" target="_blank" rel="noopener" href="${wa(t('m_well', { w: t('w' + i), p: WELL_PRICES[i - 1] }) + '\n' + t('m_name', { fn: fn() }))}">${ic('p-wa')}${t('fund_well')}</a></div></article>`).join('')}
+        <a class="btn" target="_blank" rel="noopener" href="${wa(t('m_well', { w: t('w' + i), p: WELL_PRICES[i - 1] }) + mName())}">${ic('p-wa')}${t('fund_well')}</a></div></article>`).join('')}
       <p class="info">${t('hq_hadith')}</p>
+      ${appsBox()}
       <section class="card"><h4>${t('hq_contact')}</h4><p>WhatsApp : <a target="_blank" rel="noopener" href="https://wa.me/${WA}" dir="ltr">+229 65 43 56 81</a></p><p>${t('email')} : <span dir="ltr">hifzquranmutun@gmail.com</span></p></section>`;
   },
   settings(R) {
@@ -437,6 +446,7 @@ document.addEventListener('click', e => {
   else if (act === 'pay') { const a = num($('#pay-a').value); if (!a) { toast(t('to_amount')); return } d.pays.unshift({ a: String(a), d: $('#pay-d').value || new Date().toISOString().slice(0, 10), to: $('#pay-to').value.trim() }); toast(t('to_paid')) }
   else if (act === 'delpay') d.pays.splice(i, 1);
   else if (act === 'delhist') d.hist.splice(i, 1);
+  else if (act === 'remind') { if (!d.hawl) d.hawl = new Date().toISOString().slice(0, 10); save(); toast(t('to_rem')); go('track'); return }
   else if (act === 'snap') { const R = compute(); d.hist.unshift({ t: Date.now(), total: money(R.total), kind: R.herdDue.join(' + ') }); d.hist = d.hist.slice(0, 30); save(); toast(t('to_snap')); modal(R); return }
   else if (act === 'copy') { const txt = recap(compute()); try { navigator.clipboard.writeText(txt).then(() => toast(t('to_copy')), () => toast(t('to_nocopy'))) } catch (x) { toast(t('to_nocopy')) } return }
   else if (act === 'prof') S.active = i;
@@ -454,5 +464,5 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && !$
 setInterval(() => { if (!$('#app').hidden) refresh() }, 15 * 60e3);
 
 applyLang(); renderGate(); sendUnsub();
-if (read(ACCESS)) { openApp(); sendLead() }
+openApp(); if (read(ACCESS)) sendLead();
 })();

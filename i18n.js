@@ -108,6 +108,17 @@ fr: {
   m_zakat: "Assalamou alaykoum.\nJe souhaite donner ma zakat avec HQM.", m_amount: "Montant calculé : {x}", m_name: "Prénom : {fn}",
   m_sadaqa: "Assalamou alaykoum.\nJe souhaite faire une sadaqa avec HQM. Pouvez-vous me présenter les possibilités ?",
   m_fitr: "Assalamou alaykoum.\nJe souhaite confier ma zakat al-fitr à HQM pour {n} personnes.", m_well: "Assalamou alaykoum.\nJe souhaite financer un puits avec HQM : {w} ({p} US).",
+  rem_t: "Ne manquez pas votre zakat l'an prochain",
+  rem_p: "L'application retient la date de votre zakat et vous la rappelle à l'approche de l'échéance. Vous pouvez aussi l'ajouter à votre agenda.",
+  rem_b: "Me rappeler ma zakat",
+  to_rem: "Date enregistrée : vous serez prévenu à l'approche de l'échéance",
+  fl_t: "Suivez les réalisations de HQM",
+  fl_p: "Pas de zakat due cette fois. Découvrez les puits creusés et les orphelins soutenus par HQM, en vidéo.",
+  fl_yt: "Voir la chaîne YouTube de HQM",
+  fl_wa: "Recevoir les vidéos sur WhatsApp",
+  m_follow: "Assalamou alaykoum, je souhaite recevoir les vidéos des réalisations de HQM (puits, orphelins).",
+  apps_t: "Nos applications",
+  apps_hifz: "Mémorisez le Coran : l'application écoute votre récitation et montre chaque faute.",
   footer: "Outil d'aide au calcul fondé sur les avis les plus répandus. Pour un cas particulier, référez-vous à un savant."
 },
 en: {
@@ -218,6 +229,17 @@ en: {
   m_zakat: "Assalamu alaykum.\nI would like to give my zakat with HQM.", m_amount: "Amount calculated: {x}", m_name: "First name: {fn}",
   m_sadaqa: "Assalamu alaykum.\nI would like to give a sadaqa with HQM. Could you tell me the options?",
   m_fitr: "Assalamu alaykum.\nI would like to entrust my zakat al-fitr to HQM for {n} people.", m_well: "Assalamu alaykum.\nI would like to fund a well with HQM: {w} ({p} US).",
+  rem_t: "Don't miss your zakat next year",
+  rem_p: "The app remembers your zakat date and reminds you as it approaches. You can also add it to your calendar.",
+  rem_b: "Remind me of my zakat",
+  to_rem: "Date saved: you will be reminded as the due date approaches",
+  fl_t: "Follow HQM's projects",
+  fl_p: "No zakat due this time. See the wells dug and the orphans supported by HQM, on video.",
+  fl_yt: "Watch HQM on YouTube",
+  fl_wa: "Get the videos on WhatsApp",
+  m_follow: "Assalamu alaykum, I would like to receive the videos of HQM's projects (wells, orphans).",
+  apps_t: "Our apps",
+  apps_hifz: "Memorise the Quran: the app listens to your recitation and shows every mistake.",
   footer: "A calculation aid based on the most widespread opinions. For a particular case, ask a scholar."
 },
 ar: {
@@ -328,6 +350,17 @@ ar: {
   m_zakat: "السلام عليكم.\nأرغب في إخراج زكاتي مع HQM.", m_amount: "المبلغ المحسوب: {x}", m_name: "الاسم: {fn}",
   m_sadaqa: "السلام عليكم.\nأرغب في التصدّق مع HQM. هل تعرّفونني بالخيارات المتاحة؟",
   m_fitr: "السلام عليكم.\nأرغب في أن أعهد بزكاة الفطر إلى HQM عن {n} أفراد.", m_well: "السلام عليكم.\nأرغب في تمويل بئر مع HQM: {w} ({p} دولار أمريكي).",
+  rem_t: "لا تفوّت زكاتك في العام القادم",
+  rem_p: "يحفظ التطبيق تاريخ زكاتك ويذكّرك عند اقترابه. ويمكنك أيضًا إضافته إلى تقويمك.",
+  rem_b: "ذكّرني بزكاتي",
+  to_rem: "تم حفظ التاريخ: سنذكّرك عند اقتراب الموعد",
+  fl_t: "تابع إنجازات HQM",
+  fl_p: "لا زكاة واجبة هذه المرة. شاهد الآبار المحفورة والأيتام المكفولين من HQM بالفيديو.",
+  fl_yt: "شاهد قناة HQM على يوتيوب",
+  fl_wa: "استلم الفيديوهات على واتساب",
+  m_follow: "السلام عليكم، أرغب في استلام فيديوهات إنجازات HQM (الآبار، الأيتام).",
+  apps_t: "تطبيقاتنا",
+  apps_hifz: "احفظ القرآن: التطبيق يستمع إلى تلاوتك ويُظهر كل خطأ.",
   footer: "أداة مساعدة على الحساب مبنية على الأقوال الأشهر. وفي الحالات الخاصة ارجع إلى أهل العلم."
 }
 };

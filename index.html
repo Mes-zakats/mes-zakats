@@ -279,7 +279,12 @@ html[data-look="b"] .langs button:not([aria-pressed="true"]),html[data-look="b"]
 <div id="modal" hidden></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
+<style>
+  .card.remind .btn, .card.follow .btn, .card.follow .cta { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:8px; text-decoration:none; }
+  .card.apps .appl { display:flex; gap:12px; align-items:center; text-decoration:none; color:inherit; padding:8px; border-radius:14px; background:#F2F7FF; } .card.apps img { border-radius:12px; } .card.apps small { display:block; color:#5B6B7C; line-height:1.35; }
+</style>
 <script src="i18n.js"></script>
 <script src="app.js"></script>
+<script src="stats.js"></script>
 </body>
 </html>
