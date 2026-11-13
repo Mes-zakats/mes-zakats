@@ -162,7 +162,9 @@ $('#gate').addEventListener('submit', e => {
 });
 
 /* ---------- Calculs ---------- */
-const xn = (n, k) => n + ' × ' + t(k);
+const xn = (n, k) => { HK.add(k); return n + ' × ' + t(k); }; const HK = new Set();
+const herdKeys = R => { HK.clear(); camels(num(D().herd.cam)); cows(num(D().herd.cow)); sheep(num(D().herd.shp)); return [...HK]; };
+const herdHelp = R => { const ks = herdKeys(R); if (!ks.length) return ''; return `<section class="card help"><h4>${t('hh_t')}</h4><dl class="gl">${ks.map(k => `<dt>${t(k)}</dt><dd>${t('hh_' + k)}</dd>`).join('')}</dl><p class="note">${t('hh_rule')}</p><a class="btn" target="_blank" rel="noopener" href="${wa(t('m_herd') + mName())}">${ic('p-wa')}${t('hh_ask')}</a></section>`; };
 function camels(n) {
   if (n < 5) return [];
   if (n < 25) return [xn(Math.floor(n / 5), 'a_sheep')];
@@ -260,7 +262,7 @@ const ndDue = R => nudge('due', nm(t('nd_due_t', { fn: esc(fn()), x: money(R.res
 const ndUnder = () => nudge('under', t('nd_under_t'), t('nd_under'), t('nd_under_b'), wa(t('m_sadaqa') + mName()));
 const ndFitr = R => nudge('fitr', t('nd_fitr_t', { x: R.fp ? money(R.fVal) : qty(R.fKg, 'kg'), n: R.fN }), t('nd_fitr'), t('nd_write'), wa(t('m_fitr', { n: R.fN }) + mName()));
 const remindBox = () => `<section class="card remind"><h4>${t('rem_t')}</h4><p class="note">${t('rem_p')}</p><button class="btn" data-act="remind">${ic('p-cal')}${t('rem_b')}</button></section>`;
-const followBox = () => `<section class="card follow"><h4>${t('fl_t')}</h4><p>${t('fl_p')}</p>
+const followBox = due => `<section class="card follow"><h4>${t('fl_t')}</h4><p>${t(due ? 'fl_p2' : 'fl_p')}</p>
   <a class="cta" target="_blank" rel="noopener" data-act="follow" href="${YT_HQM}">${t('fl_yt')}</a>
   <a class="btn" target="_blank" rel="noopener" data-act="follow" href="${wa(t('m_follow'))}">${ic('p-wa')}${t('fl_wa')}</a></section>`;
 const appsBox = () => `<section class="card apps"><h4>${t('apps_t')}</h4><a class="appl" href="${HIFZ_URL}" target="_blank" rel="noopener"><img src="img/hifz.png" alt="" width="44" height="44"><div><b>Hifz Facile</b><small>${t('apps_hifz')}</small></div></a></section>`;
@@ -288,12 +290,12 @@ const LIVE = {
       [t('row_gold', { g: qty(R.goldG, 'g') }), money(R.gold)], [t('row_silver', { g: qty(R.silverG, 'g') }), money(R.silver)], [t('row_debt'), '− ' + money(R.debt), 1], [t('row_base'), money(R.base)]])}</dl>` +
     big(t('to_pay'), money(R.mal)) +
     det(`<p dir="ltr">${R.malOn ? `${money(R.base)} × ${pct(R.rt)} = <b>${money(R.mal)}</b>` : ''}</p>${R.malOn ? '' : `<p>${t('detail_under', { b: money(R.base), n: money(R.nisab) })}</p>`}<p class="note">${t(S.ref === 'gold' ? 'detail_gold' : 'detail_silver')}</p>`)) +
-    (R.malOn ? ndDue(R) + remindBox() : R.base > 0 && R.nisab ? followBox() : ''),
+    (R.malOn ? ndDue(R) + followBox(true) : R.base > 0 && R.nisab ? followBox() : ''),
   crop: R => box(R.cropOn, R.cropOn ? t('r_due') : R.kg ? t('r_nodue') : t('none_crop'),
     meter(R.kg, R.cn, t('harvest_x', { x: qty(R.kg, 'kg') }), t('nisab_x', { x: qty(R.cn, 'kg') })) + `<dl class="rows">${rows([[t('rate'), pct(R.cr)]].concat(R.cp ? [[t('value'), money(R.cropVal)]] : []))}</dl>` +
     big(t('to_give'), qty(R.cropKg, 'kg')) + det(R.cropOn ? `<p dir="ltr">${qty(R.kg, 'kg')} × ${pct(R.cr)} = <b>${qty(R.cropKg, 'kg')}</b></p>` : `<p>${t('crop_under')}</p>`)),
   herd: R => { const hr = R.herd.filter(h => h[2]).map(h => [`${t(h[0])} (${h[2]})`, h[1].length ? h[1].join(' + ') : t('st_under')]);
-    return box(R.herdDue.length > 0, R.herdDue.length ? t('herd_due') : hr.length ? t('r_nodue') : t('none_herd'), (hr.length ? `<dl class="rows">${rows(hr)}</dl>` : '') + `<p class="note">${t('herd_thr')}</p>`) },
+    return box(R.herdDue.length > 0, R.herdDue.length ? t('herd_due') : hr.length ? t('r_nodue') : t('none_herd'), (hr.length ? `<dl class="rows">${rows(hr)}</dl>` : '') + `<p class="note">${t('herd_thr')}</p>`) + (R.herdDue.length ? herdHelp(R) : '') },
   rikaz: R => box(R.rik > 0, R.rik ? t('rik_due') : t('none_rik'), big(t('to_pay'), money(R.rik)) + (R.rik ? det(`<p dir="ltr">${money(R.rikV)} × 20 % = <b>${money(R.rik)}</b></p>`) : '')),
   fitr: R => box(R.fN > 0, R.fN ? t('persons', { n: R.fN }) : t('need_persons'), (R.fp ? `<dl class="rows">${rows([[t('value'), money(R.fVal)]])}</dl>` : '') + big(t('food'), qty(R.fKg, 'kg')) +
     det(`<p dir="ltr">${R.fN} × ${qty(num(D().fitr.kg), 'kg')} = <b>${qty(R.fKg, 'kg')}</b></p>`)) + (R.fKg > 0 ? ndFitr(R) : ''),
@@ -305,7 +307,7 @@ const LIVE = {
       <a class="btn" target="_blank" rel="noopener" href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(t('cal_title'))}&dates=${ymd(h.date)}/${ymd(end)}&details=${encodeURIComponent(t('cal_det'))}">${ic('p-cal')}${t('add_cal')}</a></div>` }
 };
 const recap = R => { const l = [[t('t_mal'), money(R.mal)], [t('t_crop'), R.cp ? money(R.cropVal) : qty(R.cropKg, 'kg')], [t('t_rikaz'), money(R.rik)], [t('t_fitr'), R.fp ? money(R.fVal) : qty(R.fKg, 'kg')]];
-  return t('rc_title') + '\n' + l.map(x => x[0] + ' : ' + x[1]).join('\n') + (R.herdDue.length ? '\n' + t('rc_herd') + ' : ' + R.herdDue.join(' + ') : '') + '\n' + t('rc_total') + ' : ' + money(R.total) };
+  return t('rc_title') + '\n' + l.map(x => x[0] + ' : ' + x[1]).join('\n') + (R.herdDue.length ? '\n' + t('rc_herd') + ' : ' + R.herdDue.join(' + ') + '\n' + herdKeys(R).map(k => '  – ' + t(k) + ' : ' + t('hh_' + k)).join('\n') : '') + '\n' + t('rc_total') + ' : ' + money(R.total) };
 
 /* ---------- Écrans ---------- */
 const STRIP_IC = { mal: ['p-scale', 'p-cal', 'p-pct'], crop: ['p-scale', 'p-cal', 'p-pct'], herd: ['p-scale', 'p-cal', 'p-pct'], rikaz: ['p-what', 'p-cal', 'p-pct'], fitr: ['p-who', 'p-cal', 'p-pct'] };
