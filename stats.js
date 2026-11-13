@@ -6,7 +6,7 @@
   function flush(beacon) { if (!q.length) return; var body = JSON.stringify({ app: 'zakat', device: dev, events: q.splice(0, 50) });
     try { if (beacon && navigator.sendBeacon) navigator.sendBeacon(API + '/events', new Blob([body], { type: 'text/plain' })); else fetch(API + '/events', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: body, keepalive: true }); } catch (e) {} }
   function who() { try { var u = JSON.parse(localStorage.getItem('zakat-user') || 'null'); return u && u.fn ? { name: u.fn, tel: String(u.wa || '').slice(-4) } : null; } catch (e) { return null; } }
-  var w = who(); track('open', w ? { reg: 1 } : {});
+  var w = who(), o = { ref: document.referrer.slice(0, 120), utm: new URLSearchParams(location.search).get('utm_source') || '' }; if (w) o.reg = 1; track('open', o);
   if (w && !localStorage.getItem('zk-reg-sent')) { track('register', w); localStorage.setItem('zk-reg-sent', '1'); }
   document.addEventListener('submit', function (e) { if (e.target && e.target.id === 'gate') setTimeout(function () { var u = who(); if (u && !localStorage.getItem('zk-reg-sent')) { track('register', u); localStorage.setItem('zk-reg-sent', '1'); flush(); } }, 300); }, true);
   var lastCalc = 0; document.addEventListener('input', function (e) { if (!e.target.closest || !e.target.closest('#app')) return; var n = Date.now(); if (n - lastCalc > 10 * 60000) { lastCalc = n; track('calc'); } }, true);
